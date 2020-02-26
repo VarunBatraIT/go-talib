@@ -8,294 +8,13 @@ Licensed under terms of MIT license (see LICENSE)
 package indicators
 
 import (
-	"errors"
 	"math"
 )
 
-
 /* Momentum Indicators */
-
-// Adx - Average Directional Movement Index
-func Adx(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int) []float64 {
-
-	outReal := make([]float64, len(inClose))
-
-	inTimePeriodF := float64(inTimePeriod)
-	lookbackTotal := (2 * inTimePeriod) - 1
-	startIdx := lookbackTotal
-	outIdx := inTimePeriod
-	prevMinusDM := 0.0
-	prevPlusDM := 0.0
-	prevTR := 0.0
-	today := startIdx - lookbackTotal
-	prevHigh := inHigh[today]
-	prevLow := inLow[today]
-	prevClose := inClose[today]
-	for i := inTimePeriod - 1; i > 0; i-- {
-		today++
-		tempReal := inHigh[today]
-		diffP := tempReal - prevHigh
-		prevHigh = tempReal
-		tempReal = inLow[today]
-		diffM := prevLow - tempReal
-		prevLow = tempReal
-		if (diffM > 0) && (diffP < diffM) {
-			prevMinusDM += diffM
-		} else if (diffP > 0) && (diffP > diffM) {
-			prevPlusDM += diffP
-		}
-		tempReal = prevHigh - prevLow
-		tempReal2 := math.Abs(prevHigh - prevClose)
-		if tempReal2 > tempReal {
-			tempReal = tempReal2
-		}
-		tempReal2 = math.Abs(prevLow - prevClose)
-		if tempReal2 > tempReal {
-			tempReal = tempReal2
-		}
-
-		prevTR += tempReal
-		prevClose = inClose[today]
-	}
-	sumDX := 0.0
-	for i := inTimePeriod; i > 0; i-- {
-		today++
-		tempReal := inHigh[today]
-		diffP := tempReal - prevHigh
-		prevHigh = tempReal
-		tempReal = inLow[today]
-		diffM := prevLow - tempReal
-		prevLow = tempReal
-		prevMinusDM -= prevMinusDM / inTimePeriodF
-		prevPlusDM -= prevPlusDM / inTimePeriodF
-		if (diffM > 0) && (diffP < diffM) {
-			prevMinusDM += diffM
-		} else if (diffP > 0) && (diffP > diffM) {
-			prevPlusDM += diffP
-		}
-		tempReal = prevHigh - prevLow
-		tempReal2 := math.Abs(prevHigh - prevClose)
-		if tempReal2 > tempReal {
-			tempReal = tempReal2
-		}
-		tempReal2 = math.Abs(prevLow - prevClose)
-		if tempReal2 > tempReal {
-			tempReal = tempReal2
-		}
-
-		prevTR = prevTR - (prevTR / inTimePeriodF) + tempReal
-		prevClose = inClose[today]
-		if !(((-(0.00000000000001)) < prevTR) && (prevTR < (0.00000000000001))) {
-			minusDI := (100.0 * (prevMinusDM / prevTR))
-			plusDI := (100.0 * (prevPlusDM / prevTR))
-			tempReal = minusDI + plusDI
-			if !(((-(0.00000000000001)) < tempReal) && (tempReal < (0.00000000000001))) {
-				sumDX += (100.0 * (math.Abs(minusDI-plusDI) / tempReal))
-			}
-		}
-	}
-	prevADX := (sumDX / inTimePeriodF)
-
-	outReal[startIdx] = prevADX
-	outIdx = startIdx + 1
-	today++
-	for today < len(inClose) {
-		tempReal := inHigh[today]
-		diffP := tempReal - prevHigh
-		prevHigh = tempReal
-		tempReal = inLow[today]
-		diffM := prevLow - tempReal
-		prevLow = tempReal
-		prevMinusDM -= prevMinusDM / inTimePeriodF
-		prevPlusDM -= prevPlusDM / inTimePeriodF
-		if (diffM > 0) && (diffP < diffM) {
-			prevMinusDM += diffM
-		} else if (diffP > 0) && (diffP > diffM) {
-			prevPlusDM += diffP
-		}
-		tempReal = prevHigh - prevLow
-		tempReal2 := math.Abs(prevHigh - prevClose)
-		if tempReal2 > tempReal {
-			tempReal = tempReal2
-		}
-		tempReal2 = math.Abs(prevLow - prevClose)
-		if tempReal2 > tempReal {
-			tempReal = tempReal2
-		}
-
-		prevTR = prevTR - (prevTR / inTimePeriodF) + tempReal
-		prevClose = inClose[today]
-		if !(((-(0.00000000000001)) < prevTR) && (prevTR < (0.00000000000001))) {
-			minusDI := (100.0 * (prevMinusDM / prevTR))
-			plusDI := (100.0 * (prevPlusDM / prevTR))
-			tempReal = minusDI + plusDI
-			if !(((-(0.00000000000001)) < tempReal) && (tempReal < (0.00000000000001))) {
-				tempReal = (100.0 * (math.Abs(minusDI-plusDI) / tempReal))
-				prevADX = (((prevADX * (inTimePeriodF - 1)) + tempReal) / inTimePeriodF)
-			}
-		}
-		outReal[outIdx] = prevADX
-		outIdx++
-		today++
-	}
-	return outReal
-}
-
-// AdxR - Average Directional Movement Index Rating
-func AdxR(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int) []float64 {
-
-	outReal := make([]float64, len(inClose))
-	startIdx := (2 * inTimePeriod) - 1
-	tmpadx := Adx(inHigh, inLow, inClose, inTimePeriod)
-	i := startIdx
-	j := startIdx + inTimePeriod - 1
-	for outIdx := startIdx + inTimePeriod - 1; outIdx < len(inClose); outIdx, i, j = outIdx+1, i+1, j+1 {
-		outReal[outIdx] = ((tmpadx[i] + tmpadx[j]) / 2.0)
-	}
-	return outReal
-}
-
-// Apo - Absolute Price Oscillator
-func Apo(inReal []float64, inFastPeriod int, inSlowPeriod int, inMAType MaType) []float64 {
-
-	if inSlowPeriod < inFastPeriod {
-		inSlowPeriod, inFastPeriod = inFastPeriod, inSlowPeriod
-	}
-	tempBuffer := Ma(inReal, inFastPeriod, inMAType)
-	outReal := Ma(inReal, inSlowPeriod, inMAType)
-	for i := inSlowPeriod - 1; i < len(inReal); i++ {
-		outReal[i] = tempBuffer[i] - outReal[i]
-	}
-
-	return outReal
-}
-
-// Aroon - Aroon
-// aroondown, aroonup = AROON(high, low, timeperiod=14)
-func Aroon(inHigh []float64, inLow []float64, inTimePeriod int) ([]float64, []float64) {
-
-	outAroonUp := make([]float64, len(inHigh))
-	outAroonDown := make([]float64, len(inHigh))
-
-	startIdx := inTimePeriod
-	outIdx := startIdx
-	today := startIdx
-	trailingIdx := startIdx - inTimePeriod
-	lowestIdx := -1
-	highestIdx := -1
-	lowest := 0.0
-	highest := 0.0
-	factor := 100.0 / float64(inTimePeriod)
-	for today < len(inHigh) {
-		tmp := inLow[today]
-		if lowestIdx < trailingIdx {
-			lowestIdx = trailingIdx
-			lowest = inLow[lowestIdx]
-			i := lowestIdx
-			i++
-			for i <= today {
-				tmp = inLow[i]
-				if tmp <= lowest {
-					lowestIdx = i
-					lowest = tmp
-				}
-				i++
-			}
-		} else if tmp <= lowest {
-			lowestIdx = today
-			lowest = tmp
-		}
-		tmp = inHigh[today]
-		if highestIdx < trailingIdx {
-			highestIdx = trailingIdx
-			highest = inHigh[highestIdx]
-			i := highestIdx
-			i++
-			for i <= today {
-				tmp = inHigh[i]
-				if tmp >= highest {
-					highestIdx = i
-					highest = tmp
-				}
-				i++
-			}
-		} else if tmp >= highest {
-			highestIdx = today
-			highest = tmp
-		}
-		outAroonUp[outIdx] = factor * float64(inTimePeriod-(today-highestIdx))
-		outAroonDown[outIdx] = factor * float64(inTimePeriod-(today-lowestIdx))
-		outIdx++
-		trailingIdx++
-		today++
-	}
-	return outAroonDown, outAroonUp
-}
-
-// AroonOsc - Aroon Oscillator
-func AroonOsc(inHigh []float64, inLow []float64, inTimePeriod int) []float64 {
-
-	outReal := make([]float64, len(inHigh))
-
-	startIdx := inTimePeriod
-	outIdx := startIdx
-	today := startIdx
-	trailingIdx := startIdx - inTimePeriod
-	lowestIdx := -1
-	highestIdx := -1
-	lowest := 0.0
-	highest := 0.0
-	factor := 100.0 / float64(inTimePeriod)
-	for today < len(inHigh) {
-		tmp := inLow[today]
-		if lowestIdx < trailingIdx {
-			lowestIdx = trailingIdx
-			lowest = inLow[lowestIdx]
-			i := lowestIdx
-			i++
-			for i <= today {
-				tmp = inLow[i]
-				if tmp <= lowest {
-					lowestIdx = i
-					lowest = tmp
-				}
-				i++
-			}
-		} else if tmp <= lowest {
-			lowestIdx = today
-			lowest = tmp
-		}
-		tmp = inHigh[today]
-		if highestIdx < trailingIdx {
-			highestIdx = trailingIdx
-			highest = inHigh[highestIdx]
-			i := highestIdx
-			i++
-			for i <= today {
-				tmp = inHigh[i]
-				if tmp >= highest {
-					highestIdx = i
-					highest = tmp
-				}
-				i++
-			}
-		} else if tmp >= highest {
-			highestIdx = today
-			highest = tmp
-		}
-		aroon := factor * float64(highestIdx-lowestIdx)
-		outReal[outIdx] = aroon
-		outIdx++
-		trailingIdx++
-		today++
-	}
-
-	return outReal
-}
 
 // Bop - Balance Of Power
 func Bop(inOpen []float64, inHigh []float64, inLow []float64, inClose []float64) []float64 {
-
 	outReal := make([]float64, len(inClose))
 
 	for i := 0; i < len(inClose); i++ {
@@ -310,89 +29,8 @@ func Bop(inOpen []float64, inHigh []float64, inLow []float64, inClose []float64)
 	return outReal
 }
 
-// Cmo - Chande Momentum Oscillator
-func Cmo(inReal []float64, inTimePeriod int) []float64 {
-
-	outReal := make([]float64, len(inReal))
-
-	lookbackTotal := inTimePeriod
-	startIdx := lookbackTotal
-	outIdx := startIdx
-	if inTimePeriod == 1 {
-		copy(outReal, inReal)
-		return outReal
-	}
-	today := startIdx - lookbackTotal
-	prevValue := inReal[today]
-	prevGain := 0.0
-	prevLoss := 0.0
-	today++
-	for i := inTimePeriod; i > 0; i-- {
-		tempValue1 := inReal[today]
-		tempValue2 := tempValue1 - prevValue
-		prevValue = tempValue1
-		if tempValue2 < 0 {
-			prevLoss -= tempValue2
-		} else {
-			prevGain += tempValue2
-		}
-		today++
-	}
-	prevLoss /= float64(inTimePeriod)
-	prevGain /= float64(inTimePeriod)
-	if today > startIdx {
-		tempValue1 := prevGain + prevLoss
-		if !(((-(0.00000000000001)) < tempValue1) && (tempValue1 < (0.00000000000001))) {
-			outReal[outIdx] = 100.0 * ((prevGain - prevLoss) / tempValue1)
-		} else {
-			outReal[outIdx] = 0.0
-		}
-		outIdx++
-	} else {
-		for today < startIdx {
-			tempValue1 := inReal[today]
-			tempValue2 := tempValue1 - prevValue
-			prevValue = tempValue1
-			prevLoss *= float64(inTimePeriod - 1)
-			prevGain *= float64(inTimePeriod - 1)
-			if tempValue2 < 0 {
-				prevLoss -= tempValue2
-			} else {
-				prevGain += tempValue2
-			}
-			prevLoss /= float64(inTimePeriod)
-			prevGain /= float64(inTimePeriod)
-			today++
-		}
-	}
-	for today < len(inReal) {
-		tempValue1 := inReal[today]
-		today++
-		tempValue2 := tempValue1 - prevValue
-		prevValue = tempValue1
-		prevLoss *= float64(inTimePeriod - 1)
-		prevGain *= float64(inTimePeriod - 1)
-		if tempValue2 < 0 {
-			prevLoss -= tempValue2
-		} else {
-			prevGain += tempValue2
-		}
-		prevLoss /= float64(inTimePeriod)
-		prevGain /= float64(inTimePeriod)
-		tempValue1 = prevGain + prevLoss
-		if !(((-(0.00000000000001)) < tempValue1) && (tempValue1 < (0.00000000000001))) {
-			outReal[outIdx] = 100.0 * ((prevGain - prevLoss) / tempValue1)
-		} else {
-			outReal[outIdx] = 0.0
-		}
-		outIdx++
-	}
-	return outReal
-}
-
 // Cci - Commodity Channel Index
 func Cci(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int) []float64 {
-
 	outReal := make([]float64, len(inClose))
 
 	circBufferIdx := 0
@@ -409,7 +47,6 @@ func Cci(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int)
 			if circBufferIdx > maxIdxCircBuffer {
 				circBufferIdx = 0
 			}
-
 		}
 	}
 	outIdx := inTimePeriod - 1
@@ -445,114 +82,8 @@ func Cci(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int)
 	return outReal
 }
 
-// Dx - Directional Movement Index
-func Dx(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int) []float64 {
-
-	outReal := make([]float64, len(inClose))
-
-	lookbackTotal := 2
-	if inTimePeriod > 1 {
-		lookbackTotal = inTimePeriod
-	}
-	startIdx := lookbackTotal
-	outIdx := startIdx
-	prevMinusDM := 0.0
-	prevPlusDM := 0.0
-	prevTR := 0.0
-	today := startIdx - lookbackTotal
-	prevHigh := inHigh[today]
-	prevLow := inLow[today]
-	prevClose := inClose[today]
-	i := inTimePeriod - 1
-	for i > 0 {
-		i--
-		today++
-		tempReal := inHigh[today]
-		diffP := tempReal - prevHigh
-		prevHigh = tempReal
-		tempReal = inLow[today]
-		diffM := prevLow - tempReal
-		prevLow = tempReal
-		if (diffM > 0) && (diffP < diffM) {
-			prevMinusDM += diffM
-		} else if (diffP > 0) && (diffP > diffM) {
-			prevPlusDM += diffP
-		}
-		tempReal = prevHigh - prevLow
-		tempReal2 := math.Abs(prevHigh - prevClose)
-		if tempReal2 > tempReal {
-			tempReal = tempReal2
-		}
-		tempReal2 = math.Abs(prevLow - prevClose)
-		if tempReal2 > tempReal {
-			tempReal = tempReal2
-		}
-
-		prevTR += tempReal
-		prevClose = inClose[today]
-	}
-
-	if !(((-(0.00000000000001)) < prevTR) && (prevTR < (0.00000000000001))) {
-		minusDI := (100.0 * (prevMinusDM / prevTR))
-		plusDI := (100.0 * (prevPlusDM / prevTR))
-		tempReal := minusDI + plusDI
-		if !(((-(0.00000000000001)) < tempReal) && (tempReal < (0.00000000000001))) {
-			outReal[outIdx] = (100.0 * (math.Abs(minusDI-plusDI) / tempReal))
-		} else {
-			outReal[outIdx] = 0.0
-		}
-	} else {
-		outReal[outIdx] = 0.0
-	}
-
-	outIdx = startIdx
-	for today < len(inClose)-1 {
-		today++
-		tempReal := inHigh[today]
-		diffP := tempReal - prevHigh
-		prevHigh = tempReal
-		tempReal = inLow[today]
-		diffM := prevLow - tempReal
-		prevLow = tempReal
-		prevMinusDM -= prevMinusDM / float64(inTimePeriod)
-		prevPlusDM -= prevPlusDM / float64(inTimePeriod)
-		if (diffM > 0) && (diffP < diffM) {
-			prevMinusDM += diffM
-		} else if (diffP > 0) && (diffP > diffM) {
-			prevPlusDM += diffP
-		}
-		tempReal = prevHigh - prevLow
-		tempReal2 := math.Abs(prevHigh - prevClose)
-		if tempReal2 > tempReal {
-			tempReal = tempReal2
-		}
-		tempReal2 = math.Abs(prevLow - prevClose)
-		if tempReal2 > tempReal {
-			tempReal = tempReal2
-		}
-
-		prevTR = prevTR - (prevTR / float64(inTimePeriod)) + tempReal
-		prevClose = inClose[today]
-		if !(((-(0.00000000000001)) < prevTR) && (prevTR < (0.00000000000001))) {
-			minusDI := (100.0 * (prevMinusDM / prevTR))
-			plusDI := (100.0 * (prevPlusDM / prevTR))
-			tempReal = minusDI + plusDI
-			if !(((-(0.00000000000001)) < tempReal) && (tempReal < (0.00000000000001))) {
-				outReal[outIdx] = (100.0 * (math.Abs(minusDI-plusDI) / tempReal))
-			} else {
-				outReal[outIdx] = outReal[outIdx-1]
-			}
-		} else {
-			outReal[outIdx] = outReal[outIdx-1]
-		}
-		outIdx++
-	}
-	return outReal
-}
-
 // MinusDI - Minus Directional Indicator
 func MinusDI(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int) []float64 {
-
 	outReal := make([]float64, len(inClose))
 
 	lookbackTotal := 1
@@ -579,7 +110,6 @@ func MinusDI(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod 
 			diffM := prevLow - tempReal
 			prevLow = tempReal
 			if (diffM > 0) && (diffP < diffM) {
-
 				tempReal = prevHigh - prevLow
 				tempReal2 := math.Abs(prevHigh - prevClose)
 				if tempReal2 > tempReal {
@@ -707,99 +237,8 @@ func MinusDI(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod 
 	return outReal
 }
 
-// MinusDM - Minus Directional Movement
-func MinusDM(inHigh []float64, inLow []float64, inTimePeriod int) []float64 {
-
-	outReal := make([]float64, len(inHigh))
-
-	lookbackTotal := 1
-	if inTimePeriod > 1 {
-		lookbackTotal = inTimePeriod - 1
-	}
-	startIdx := lookbackTotal
-	outIdx := startIdx
-	today := startIdx
-	prevHigh := 0.0
-	prevLow := 0.0
-	if inTimePeriod <= 1 {
-		today = startIdx - 1
-		prevHigh = inHigh[today]
-		prevLow = inLow[today]
-		for today < len(inHigh)-1 {
-			today++
-			tempReal := inHigh[today]
-			diffP := tempReal - prevHigh
-			prevHigh = tempReal
-			tempReal = inLow[today]
-			diffM := prevLow - tempReal
-			prevLow = tempReal
-			if (diffM > 0) && (diffP < diffM) {
-				outReal[outIdx] = diffM
-			} else {
-				outReal[outIdx] = 0
-			}
-			outIdx++
-		}
-		return outReal
-	}
-	prevMinusDM := 0.0
-	today = startIdx - lookbackTotal
-	prevHigh = inHigh[today]
-	prevLow = inLow[today]
-	i := inTimePeriod - 1
-	for i > 0 {
-		i--
-		today++
-		tempReal := inHigh[today]
-		diffP := tempReal - prevHigh
-		prevHigh = tempReal
-		tempReal = inLow[today]
-		diffM := prevLow - tempReal
-		prevLow = tempReal
-		if (diffM > 0) && (diffP < diffM) {
-			prevMinusDM += diffM
-		}
-	}
-	i = 0
-	for i != 0 {
-		i--
-		today++
-		tempReal := inHigh[today]
-		diffP := tempReal - prevHigh
-		prevHigh = tempReal
-		tempReal = inLow[today]
-		diffM := prevLow - tempReal
-		prevLow = tempReal
-		if (diffM > 0) && (diffP < diffM) {
-			prevMinusDM = prevMinusDM - (prevMinusDM / float64(inTimePeriod)) + diffM
-		} else {
-			prevMinusDM = prevMinusDM - (prevMinusDM / float64(inTimePeriod))
-		}
-	}
-	outReal[startIdx] = prevMinusDM
-	outIdx = startIdx + 1
-	for today < len(inHigh)-1 {
-		today++
-		tempReal := inHigh[today]
-		diffP := tempReal - prevHigh
-		prevHigh = tempReal
-		tempReal = inLow[today]
-		diffM := prevLow - tempReal
-		prevLow = tempReal
-		if (diffM > 0) && (diffP < diffM) {
-			prevMinusDM = prevMinusDM - (prevMinusDM / float64(inTimePeriod)) + diffM
-		} else {
-			prevMinusDM = prevMinusDM - (prevMinusDM / float64(inTimePeriod))
-		}
-		outReal[outIdx] = prevMinusDM
-		outIdx++
-	}
-	return outReal
-}
-
 // Mfi - Money Flow Index
 func Mfi(inHigh []float64, inLow []float64, inClose []float64, inVolume []float64, inTimePeriod int) []float64 {
-
 	outReal := make([]float64, len(inClose))
 	mflowIdx := 0
 	maxIdxMflow := (50 - 1)
@@ -835,7 +274,6 @@ func Mfi(inHigh []float64, inLow []float64, inClose []float64, inVolume []float6
 		if mflowIdx > maxIdxMflow {
 			mflowIdx = 0
 		}
-
 	}
 	if today > startIdx {
 		tempValue1 := posSumMF + negSumMF
@@ -869,7 +307,6 @@ func Mfi(inHigh []float64, inLow []float64, inClose []float64, inVolume []float6
 			if mflowIdx > maxIdxMflow {
 				mflowIdx = 0
 			}
-
 		}
 	}
 	for today < len(inClose) {
@@ -909,7 +346,6 @@ func Mfi(inHigh []float64, inLow []float64, inClose []float64, inVolume []float6
 
 // Mom - Momentum
 func Mom(inReal []float64, inTimePeriod int) []float64 {
-
 	outReal := make([]float64, len(inReal))
 
 	inIdx, outIdx, trailingIdx := inTimePeriod, inTimePeriod, 0
@@ -923,7 +359,6 @@ func Mom(inReal []float64, inTimePeriod int) []float64 {
 
 // PlusDI - Plus Directional Indicator
 func PlusDI(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int) []float64 {
-
 	outReal := make([]float64, len(inClose))
 
 	lookbackTotal := 1
@@ -950,7 +385,6 @@ func PlusDI(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod i
 			diffM := prevLow - tempReal
 			prevLow = tempReal
 			if (diffP > 0) && (diffP > diffM) {
-
 				tempReal = prevHigh - prevLow
 				tempReal2 := math.Abs(prevHigh - prevClose)
 				if tempReal2 > tempReal {
@@ -1078,220 +512,8 @@ func PlusDI(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod i
 	return outReal
 }
 
-// PlusDM - Plus Directional Movement
-func PlusDM(inHigh []float64, inLow []float64, inTimePeriod int) []float64 {
-
-	outReal := make([]float64, len(inHigh))
-
-	lookbackTotal := 1
-	if inTimePeriod > 1 {
-		lookbackTotal = inTimePeriod - 1
-	}
-	startIdx := lookbackTotal
-	outIdx := startIdx
-	today := startIdx
-	prevHigh := 0.0
-	prevLow := 0.0
-	if inTimePeriod <= 1 {
-		today = startIdx - 1
-		prevHigh = inHigh[today]
-		prevLow = inLow[today]
-		for today < len(inHigh)-1 {
-			today++
-			tempReal := inHigh[today]
-			diffP := tempReal - prevHigh
-			prevHigh = tempReal
-			tempReal = inLow[today]
-			diffM := prevLow - tempReal
-			prevLow = tempReal
-			if (diffP > 0) && (diffP > diffM) {
-				outReal[outIdx] = diffP
-			} else {
-				outReal[outIdx] = 0
-			}
-			outIdx++
-		}
-		return outReal
-	}
-	prevPlusDM := 0.0
-	today = startIdx - lookbackTotal
-	prevHigh = inHigh[today]
-	prevLow = inLow[today]
-	i := inTimePeriod - 1
-	for i > 0 {
-		i--
-		today++
-		tempReal := inHigh[today]
-		diffP := tempReal - prevHigh
-		prevHigh = tempReal
-		tempReal = inLow[today]
-		diffM := prevLow - tempReal
-		prevLow = tempReal
-		if (diffP > 0) && (diffP > diffM) {
-			prevPlusDM += diffP
-		}
-	}
-	i = 0
-	for i != 0 {
-		i--
-		today++
-		tempReal := inHigh[today]
-		diffP := tempReal - prevHigh
-		prevHigh = tempReal
-		tempReal = inLow[today]
-		diffM := prevLow - tempReal
-		prevLow = tempReal
-		if (diffP > 0) && (diffP > diffM) {
-			prevPlusDM = prevPlusDM - (prevPlusDM / float64(inTimePeriod)) + diffP
-		} else {
-			prevPlusDM = prevPlusDM - (prevPlusDM / float64(inTimePeriod))
-		}
-	}
-	outReal[startIdx] = prevPlusDM
-	outIdx = startIdx + 1
-	for today < len(inHigh)-1 {
-		today++
-		tempReal := inHigh[today]
-		diffP := tempReal - prevHigh
-		prevHigh = tempReal
-		tempReal = inLow[today]
-		diffM := prevLow - tempReal
-		prevLow = tempReal
-		if (diffP > 0) && (diffP > diffM) {
-			prevPlusDM = prevPlusDM - (prevPlusDM / float64(inTimePeriod)) + diffP
-		} else {
-			prevPlusDM = prevPlusDM - (prevPlusDM / float64(inTimePeriod))
-		}
-		outReal[outIdx] = prevPlusDM
-		outIdx++
-	}
-	return outReal
-}
-
-// Ppo - Percentage Price Oscillator
-func Ppo(inReal []float64, inFastPeriod int, inSlowPeriod int, inMAType MaType) []float64 {
-
-	if inSlowPeriod < inFastPeriod {
-		inSlowPeriod, inFastPeriod = inFastPeriod, inSlowPeriod
-	}
-	tempBuffer := Ma(inReal, inFastPeriod, inMAType)
-	outReal := Ma(inReal, inSlowPeriod, inMAType)
-
-	for i := inSlowPeriod - 1; i < len(inReal); i++ {
-		tempReal := outReal[i]
-		if !(((-(0.00000000000001)) < tempReal) && (tempReal < (0.00000000000001))) {
-			outReal[i] = ((tempBuffer[i] - tempReal) / tempReal) * 100.0
-		} else {
-			outReal[i] = 0.0
-		}
-	}
-
-	return outReal
-}
-
-// Rocp - Rate of change Percentage: (price-prevPrice)/prevPrice
-func Rocp(inReal []float64, inTimePeriod int) []float64 {
-
-	outReal := make([]float64, len(inReal))
-
-	if inTimePeriod < 1 {
-		return outReal
-	}
-
-	startIdx := inTimePeriod
-	outIdx := startIdx
-	inIdx := startIdx
-	trailingIdx := startIdx - inTimePeriod
-	for inIdx < len(outReal) {
-		tempReal := inReal[trailingIdx]
-		if tempReal != 0.0 {
-			outReal[outIdx] = (inReal[inIdx] - tempReal) / tempReal
-		} else {
-			outReal[outIdx] = 0.0
-		}
-		trailingIdx++
-		outIdx++
-		inIdx++
-	}
-
-	return outReal
-}
-
-// Roc - Rate of change : ((price/prevPrice)-1)*100
-func Roc(inReal []float64, inTimePeriod int) []float64 {
-
-	outReal := make([]float64, len(inReal))
-
-	startIdx := inTimePeriod
-	outIdx := inTimePeriod
-	inIdx := startIdx
-	trailingIdx := startIdx - inTimePeriod
-
-	for inIdx < len(inReal) {
-		tempReal := inReal[trailingIdx]
-		if tempReal != 0.0 {
-			outReal[outIdx] = ((inReal[inIdx] / tempReal) - 1.0) * 100.0
-		} else {
-			outReal[outIdx] = 0.0
-		}
-		trailingIdx++
-		outIdx++
-		inIdx++
-	}
-	return outReal
-}
-
-// Rocr - Rate of change ratio: (price/prevPrice)
-func Rocr(inReal []float64, inTimePeriod int) []float64 {
-
-	outReal := make([]float64, len(inReal))
-
-	startIdx := inTimePeriod
-	outIdx := inTimePeriod
-	inIdx := startIdx
-	trailingIdx := startIdx - inTimePeriod
-
-	for inIdx < len(inReal) {
-		tempReal := inReal[trailingIdx]
-		if tempReal != 0.0 {
-			outReal[outIdx] = (inReal[inIdx] / tempReal)
-		} else {
-			outReal[outIdx] = 0.0
-		}
-		trailingIdx++
-		outIdx++
-		inIdx++
-	}
-	return outReal
-}
-
-// Rocr100 - Rate of change ratio 100 scale: (price/prevPrice)*100
-func Rocr100(inReal []float64, inTimePeriod int) []float64 {
-
-	outReal := make([]float64, len(inReal))
-
-	startIdx := inTimePeriod
-	outIdx := inTimePeriod
-	inIdx := startIdx
-	trailingIdx := startIdx - inTimePeriod
-
-	for inIdx < len(inReal) {
-		tempReal := inReal[trailingIdx]
-		if tempReal != 0.0 {
-			outReal[outIdx] = (inReal[inIdx] / tempReal) * 100.0
-		} else {
-			outReal[outIdx] = 0.0
-		}
-		trailingIdx++
-		outIdx++
-		inIdx++
-	}
-	return outReal
-}
-
 // Stoch - Stochastic
 func Stoch(inHigh []float64, inLow []float64, inClose []float64, inFastKPeriod int, inSlowKPeriod int, inSlowKMAType MaType, inSlowDPeriod int, inSlowDMAType MaType) ([]float64, []float64) {
-
 	outSlowK := make([]float64, len(inClose))
 	outSlowD := make([]float64, len(inClose))
 
@@ -1313,7 +535,6 @@ func Stoch(inHigh []float64, inLow []float64, inClose []float64, inFastKPeriod i
 			lowest = inLow[lowestIdx]
 			i := lowestIdx + 1
 			for i <= today {
-
 				tmp := inLow[i]
 				if tmp < lowest {
 					lowestIdx = i
@@ -1369,7 +590,6 @@ func Stoch(inHigh []float64, inLow []float64, inClose []float64, inFastKPeriod i
 
 // StochF - Stochastic Fast
 func StochF(inHigh []float64, inLow []float64, inClose []float64, inFastKPeriod int, inFastDPeriod int, inFastDMAType MaType) ([]float64, []float64) {
-
 	outFastK := make([]float64, len(inClose))
 	outFastD := make([]float64, len(inClose))
 
@@ -1427,7 +647,6 @@ func StochF(inHigh []float64, inLow []float64, inClose []float64, inFastKPeriod 
 		}
 		if diff != 0.0 {
 			tempBuffer[outIdx] = (inClose[today] - lowest) / diff
-
 		} else {
 			tempBuffer[outIdx] = 0.0
 		}
@@ -1445,29 +664,8 @@ func StochF(inHigh []float64, inLow []float64, inClose []float64, inFastKPeriod 
 	return outFastK, outFastD
 }
 
-// StochRsi - Stochastic Relative Strength Index
-func StochRsi(inReal []float64, inTimePeriod int, inFastKPeriod int, inFastDPeriod int, inFastDMAType MaType) ([]float64, []float64) {
-
-	outFastK := make([]float64, len(inReal))
-	outFastD := make([]float64, len(inReal))
-
-	lookbackSTOCHF := (inFastKPeriod - 1) + (inFastDPeriod - 1)
-	lookbackTotal := inTimePeriod + lookbackSTOCHF
-	startIdx := lookbackTotal
-	tempRSIBuffer := Rsi(inReal, inTimePeriod)
-	tempk, tempd := StochF(tempRSIBuffer, tempRSIBuffer, tempRSIBuffer, inFastKPeriod, inFastDPeriod, inFastDMAType)
-
-	for i := startIdx; i < len(inReal); i++ {
-		outFastK[i] = tempk[i]
-		outFastD[i] = tempd[i]
-	}
-
-	return outFastK, outFastD
-}
-
 //Trix - 1-day Rate-Of-Change (ROC) of a Triple Smooth EMA
 func Trix(inReal []float64, inTimePeriod int) []float64 {
-
 	tmpReal := Ema(inReal, inTimePeriod)
 	tmpReal = Ema(tmpReal[inTimePeriod-1:], inTimePeriod)
 	tmpReal = Ema(tmpReal[inTimePeriod-1:], inTimePeriod)
@@ -1483,7 +681,6 @@ func Trix(inReal []float64, inTimePeriod int) []float64 {
 
 // UltOsc - Ultimate Oscillator
 func UltOsc(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod1 int, inTimePeriod2 int, inTimePeriod3 int) []float64 {
-
 	outReal := make([]float64, len(inClose))
 
 	usedFlag := make([]int, 3)
@@ -1524,7 +721,6 @@ func UltOsc(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod1 
 	a1Total := 0.0
 	b1Total := 0.0
 	for i := startIdx - inTimePeriod1 + 1; i < startIdx; i++ {
-
 		tempLT := inLow[i]
 		tempHT := inHigh[i]
 		tempCY := inClose[i-1]
@@ -1552,7 +748,6 @@ func UltOsc(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod1 
 	a2Total := 0.0
 	b2Total := 0.0
 	for i := startIdx - inTimePeriod2 + 1; i < startIdx; i++ {
-
 		tempLT := inLow[i]
 		tempHT := inHigh[i]
 		tempCY := inClose[i-1]
@@ -1580,7 +775,6 @@ func UltOsc(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod1 
 	a3Total := 0.0
 	b3Total := 0.0
 	for i := startIdx - inTimePeriod3 + 1; i < startIdx; i++ {
-
 		tempLT := inLow[i]
 		tempHT := inHigh[i]
 		tempCY := inClose[i-1]
@@ -1618,7 +812,6 @@ func UltOsc(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod1 
 	trailingIdx3 := today - inTimePeriod3 + 1
 
 	for today < len(inClose) {
-
 		tempLT := inLow[today]
 		tempHT := inHigh[today]
 		tempCY := inClose[today-1]
@@ -1733,7 +926,6 @@ func UltOsc(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod1 
 
 // WillR - Williams' %R
 func WillR(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int) []float64 {
-
 	outReal := make([]float64, len(inClose))
 	nbInitialElementNeeded := (inTimePeriod - 1)
 	diff := 0.0
@@ -1803,7 +995,6 @@ func WillR(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod in
 
 // Ad - Chaikin A/D Line
 func Ad(inHigh []float64, inLow []float64, inClose []float64, inVolume []float64) []float64 {
-
 	outReal := make([]float64, len(inClose))
 
 	startIdx := 0
@@ -1827,75 +1018,8 @@ func Ad(inHigh []float64, inLow []float64, inClose []float64, inVolume []float64
 	return outReal
 }
 
-// AdOsc - Chaikin A/D Oscillator
-func AdOsc(inHigh []float64, inLow []float64, inClose []float64, inVolume []float64, inFastPeriod int, inSlowPeriod int) []float64 {
-
-	outReal := make([]float64, len(inClose))
-
-	if (inFastPeriod < 2) || (inSlowPeriod < 2) {
-		return outReal
-	}
-
-	slowestPeriod := 0
-	if inFastPeriod < inSlowPeriod {
-		slowestPeriod = inSlowPeriod
-	} else {
-		slowestPeriod = inFastPeriod
-	}
-	lookbackTotal := slowestPeriod - 1
-	startIdx := lookbackTotal
-	today := startIdx - lookbackTotal
-	ad := 0.0
-	fastk := (2.0 / (float64(inFastPeriod) + 1.0))
-	oneMinusfastk := 1.0 - fastk
-	slowk := (2.0 / (float64(inSlowPeriod) + 1.0))
-	oneMinusslowk := 1.0 - slowk
-	high := inHigh[today]
-	low := inLow[today]
-	tmp := high - low
-	close := inClose[today]
-	if tmp > 0.0 {
-		ad += (((close - low) - (high - close)) / tmp) * (inVolume[today])
-	}
-	today++
-	fastEMA := ad
-	slowEMA := ad
-
-	for today < startIdx {
-		high = inHigh[today]
-		low = inLow[today]
-		tmp = high - low
-		close = inClose[today]
-		if tmp > 0.0 {
-			ad += (((close - low) - (high - close)) / tmp) * (inVolume[today])
-		}
-		today++
-
-		fastEMA = (fastk * ad) + (oneMinusfastk * fastEMA)
-		slowEMA = (slowk * ad) + (oneMinusslowk * slowEMA)
-	}
-	outIdx := lookbackTotal
-	for today < len(inClose) {
-		high = inHigh[today]
-		low = inLow[today]
-		tmp = high - low
-		close = inClose[today]
-		if tmp > 0.0 {
-			ad += (((close - low) - (high - close)) / tmp) * (inVolume[today])
-		}
-		today++
-		fastEMA = (fastk * ad) + (oneMinusfastk * fastEMA)
-		slowEMA = (slowk * ad) + (oneMinusslowk * slowEMA)
-		outReal[outIdx] = fastEMA - slowEMA
-		outIdx++
-	}
-
-	return outReal
-}
-
 // Obv - On Balance Volume
 func Obv(inReal []float64, inVolume []float64) []float64 {
-
 	outReal := make([]float64, len(inReal))
 	startIdx := 0
 	prevOBV := inVolume[startIdx]
@@ -1917,118 +1041,10 @@ func Obv(inReal []float64, inVolume []float64) []float64 {
 
 /* Volatility Indicators */
 
-// Atr - Average True Range
-func Atr(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int) []float64 {
-
-	outReal := make([]float64, len(inClose))
-
-	inTimePeriodF := float64(inTimePeriod)
-
-	if inTimePeriod < 1 {
-		return outReal
-	}
-
-	if inTimePeriod <= 1 {
-		return TRange(inHigh, inLow, inClose)
-	}
-
-	outIdx := inTimePeriod
-	today := inTimePeriod + 1
-
-	tr := TRange(inHigh, inLow, inClose)
-	prevATRTemp := Sma(tr, inTimePeriod)
-	prevATR := prevATRTemp[inTimePeriod]
-	outReal[inTimePeriod] = prevATR
-
-	for outIdx = inTimePeriod + 1; outIdx < len(inClose); outIdx++ {
-		prevATR *= inTimePeriodF - 1.0
-		prevATR += tr[today]
-		prevATR /= inTimePeriodF
-		outReal[outIdx] = prevATR
-		today++
-	}
-
-	return outReal
-}
-
-// Natr - Normalized Average True Range
-func Natr(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int) []float64 {
-
-	outReal := make([]float64, len(inClose))
-
-	if inTimePeriod < 1 {
-		return outReal
-	}
-
-	if inTimePeriod <= 1 {
-		return TRange(inHigh, inLow, inClose)
-	}
-
-	inTimePeriodF := float64(inTimePeriod)
-	outIdx := inTimePeriod
-	today := inTimePeriod
-
-	tr := TRange(inHigh, inLow, inClose)
-	prevATRTemp := Sma(tr, inTimePeriod)
-	prevATR := prevATRTemp[inTimePeriod]
-
-	tempValue := inClose[today]
-	if tempValue != 0.0 {
-		outReal[outIdx] = (prevATR / tempValue) * 100.0
-	} else {
-		outReal[outIdx] = 0.0
-	}
-
-	for outIdx = inTimePeriod + 1; outIdx < len(inClose); outIdx++ {
-		today++
-		prevATR *= inTimePeriodF - 1.0
-		prevATR += tr[today]
-		prevATR /= inTimePeriodF
-		tempValue = inClose[today]
-		if tempValue != 0.0 {
-			outReal[outIdx] = (prevATR / tempValue) * 100.0
-		} else {
-			outReal[0] = 0.0
-		}
-	}
-
-	return outReal
-}
-
-// TRange - True Range
-func TRange(inHigh []float64, inLow []float64, inClose []float64) []float64 {
-
-	outReal := make([]float64, len(inClose))
-
-	startIdx := 1
-	outIdx := startIdx
-	today := startIdx
-	for today < len(inClose) {
-		tempLT := inLow[today]
-		tempHT := inHigh[today]
-		tempCY := inClose[today-1]
-		greatest := tempHT - tempLT
-		val2 := math.Abs(tempCY - tempHT)
-		if val2 > greatest {
-			greatest = val2
-		}
-		val3 := math.Abs(tempCY - tempLT)
-		if val3 > greatest {
-			greatest = val3
-		}
-		outReal[outIdx] = greatest
-		outIdx++
-		today++
-	}
-
-	return outReal
-}
-
 /* Price Transform */
 
 // AvgPrice - Average Price (o+h+l+c)/4
 func AvgPrice(inOpen []float64, inHigh []float64, inLow []float64, inClose []float64) []float64 {
-
 	outReal := make([]float64, len(inClose))
 	outIdx := 0
 	startIdx := 0
@@ -2042,7 +1058,6 @@ func AvgPrice(inOpen []float64, inHigh []float64, inLow []float64, inClose []flo
 
 // MedPrice - Median Price (h+l)/2
 func MedPrice(inHigh []float64, inLow []float64) []float64 {
-
 	outReal := make([]float64, len(inHigh))
 	outIdx := 0
 	startIdx := 0
@@ -2056,7 +1071,6 @@ func MedPrice(inHigh []float64, inLow []float64) []float64 {
 
 // TypPrice - Typical Price (h+l+c)/3
 func TypPrice(inHigh []float64, inLow []float64, inClose []float64) []float64 {
-
 	outReal := make([]float64, len(inClose))
 	outIdx := 0
 	startIdx := 0
@@ -2070,7 +1084,6 @@ func TypPrice(inHigh []float64, inLow []float64, inClose []float64) []float64 {
 
 // WclPrice - Weighted Close Price
 func WclPrice(inHigh []float64, inLow []float64, inClose []float64) []float64 {
-
 	outReal := make([]float64, len(inClose))
 	outIdx := 0
 	startIdx := 0
@@ -2086,7 +1099,6 @@ func WclPrice(inHigh []float64, inLow []float64, inClose []float64) []float64 {
 
 // HtDcPeriod - Hilbert Transform - Dominant Cycle Period (lookback=32)
 func HtDcPeriod(inReal []float64) []float64 {
-
 	outReal := make([]float64, len(inReal))
 
 	a := 0.0962
@@ -2299,7 +1311,6 @@ func HtDcPeriod(inReal []float64) []float64 {
 
 // HtDcPhase - Hilbert Transform - Dominant Cycle Phase (lookback=63)
 func HtDcPhase(inReal []float64) []float64 {
-
 	outReal := make([]float64, len(inReal))
 	a := 0.0962
 	b := 0.5769
@@ -2443,7 +1454,6 @@ func HtDcPhase(inReal []float64) []float64 {
 			i1ForOddPrev3 = i1ForOddPrev2
 			i1ForOddPrev2 = detrender
 		} else {
-
 			hilbertTempReal = a * smoothedValue
 			detrender = -detrenderOdd[hilbertIdx]
 			detrenderOdd[hilbertIdx] = hilbertTempReal
@@ -2556,800 +1566,10 @@ func HtDcPhase(inReal []float64) []float64 {
 	return outReal
 }
 
-// HtPhasor - Hibert Transform - Phasor Components (lookback=32)
-func HtPhasor(inReal []float64) ([]float64, []float64) {
-
-	outInPhase := make([]float64, len(inReal))
-	outQuadrature := make([]float64, len(inReal))
-
-	a := 0.0962
-	b := 0.5769
-	detrenderOdd := make([]float64, 3)
-	detrenderEven := make([]float64, 3)
-	q1Odd := make([]float64, 3)
-	q1Even := make([]float64, 3)
-	jIOdd := make([]float64, 3)
-	jIEven := make([]float64, 3)
-	jQOdd := make([]float64, 3)
-	jQEven := make([]float64, 3)
-	rad2Deg := 180.0 / (4.0 * math.Atan(1))
-	lookbackTotal := 32
-	startIdx := lookbackTotal
-	trailingWMAIdx := startIdx - lookbackTotal
-	today := trailingWMAIdx
-	tempReal := inReal[today]
-	today++
-	periodWMASub := tempReal
-	periodWMASum := tempReal
-	tempReal = inReal[today]
-	today++
-	periodWMASub += tempReal
-	periodWMASum += tempReal * 2.0
-	tempReal = inReal[today]
-	today++
-	periodWMASub += tempReal
-	periodWMASum += tempReal * 3.0
-	trailingWMAValue := 0.0
-	i := 9
-	smoothedValue := 0.0
-	for ok := true; ok; {
-		tempReal = inReal[today]
-		today++
-		periodWMASub += tempReal
-		periodWMASub -= trailingWMAValue
-		periodWMASum += tempReal * 4.0
-		trailingWMAValue = inReal[trailingWMAIdx]
-		trailingWMAIdx++
-		smoothedValue = periodWMASum * 0.1
-		periodWMASum -= periodWMASub
-		i--
-		ok = i != 0
-	}
-	hilbertIdx := 0
-	detrender := 0.0
-	prevDetrenderOdd := 0.0
-	prevDetrenderEven := 0.0
-	prevDetrenderInputOdd := 0.0
-	prevDetrenderInputEven := 0.0
-	q1 := 0.0
-	prevq1Odd := 0.0
-	prevq1Even := 0.0
-	prevq1InputOdd := 0.0
-	prevq1InputEven := 0.0
-	jI := 0.0
-	prevJIOdd := 0.0
-	prevJIEven := 0.0
-	prevJIInputOdd := 0.0
-	prevJIInputEven := 0.0
-	jQ := 0.0
-	prevJQOdd := 0.0
-	prevJQEven := 0.0
-	prevJQInputOdd := 0.0
-	prevJQInputEven := 0.0
-	period := 0.0
-	outIdx := 32
-	previ2 := 0.0
-	prevq2 := 0.0
-	Re := 0.0
-	Im := 0.0
-	i1ForOddPrev3 := 0.0
-	i1ForEvenPrev3 := 0.0
-	i1ForOddPrev2 := 0.0
-	i1ForEvenPrev2 := 0.0
-	i2 := 0.0
-	q2 := 0.0
-	for today < len(inReal) {
-		adjustedPrevPeriod := (0.075 * period) + 0.54
-		todayValue := inReal[today]
-		periodWMASub += todayValue
-		periodWMASub -= trailingWMAValue
-		periodWMASum += todayValue * 4.0
-		trailingWMAValue = inReal[trailingWMAIdx]
-		trailingWMAIdx++
-		smoothedValue = periodWMASum * 0.1
-		periodWMASum -= periodWMASub
-		hilbertTempReal := 0.0
-		if (today % 2) == 0 {
-			hilbertTempReal = a * smoothedValue
-			detrender = -detrenderEven[hilbertIdx]
-			detrenderEven[hilbertIdx] = hilbertTempReal
-			detrender += hilbertTempReal
-			detrender -= prevDetrenderEven
-			prevDetrenderEven = b * prevDetrenderInputEven
-			detrender += prevDetrenderEven
-			prevDetrenderInputEven = smoothedValue
-			detrender *= adjustedPrevPeriod
-			hilbertTempReal = a * detrender
-			q1 = -q1Even[hilbertIdx]
-			q1Even[hilbertIdx] = hilbertTempReal
-			q1 += hilbertTempReal
-			q1 -= prevq1Even
-			prevq1Even = b * prevq1InputEven
-			q1 += prevq1Even
-			prevq1InputEven = detrender
-			q1 *= adjustedPrevPeriod
-
-			if today >= startIdx {
-				outQuadrature[outIdx] = q1
-				outInPhase[outIdx] = i1ForEvenPrev3
-				outIdx++
-			}
-			hilbertTempReal = a * i1ForEvenPrev3
-			jI = -jIEven[hilbertIdx]
-			jIEven[hilbertIdx] = hilbertTempReal
-			jI += hilbertTempReal
-			jI -= prevJIEven
-			prevJIEven = b * prevJIInputEven
-			jI += prevJIEven
-			prevJIInputEven = i1ForEvenPrev3
-			jI *= adjustedPrevPeriod
-			hilbertTempReal = a * q1
-			jQ = -jQEven[hilbertIdx]
-			jQEven[hilbertIdx] = hilbertTempReal
-			jQ += hilbertTempReal
-			jQ -= prevJQEven
-			prevJQEven = b * prevJQInputEven
-			jQ += prevJQEven
-			prevJQInputEven = q1
-			jQ *= adjustedPrevPeriod
-			hilbertIdx++
-			if hilbertIdx == 3 {
-				hilbertIdx = 0
-			}
-			q2 = (0.2 * (q1 + jI)) + (0.8 * prevq2)
-			i2 = (0.2 * (i1ForEvenPrev3 - jQ)) + (0.8 * previ2)
-			i1ForOddPrev3 = i1ForOddPrev2
-			i1ForOddPrev2 = detrender
-		} else {
-
-			hilbertTempReal = a * smoothedValue
-			detrender = -detrenderOdd[hilbertIdx]
-			detrenderOdd[hilbertIdx] = hilbertTempReal
-			detrender += hilbertTempReal
-			detrender -= prevDetrenderOdd
-			prevDetrenderOdd = b * prevDetrenderInputOdd
-			detrender += prevDetrenderOdd
-			prevDetrenderInputOdd = smoothedValue
-			detrender *= adjustedPrevPeriod
-			hilbertTempReal = a * detrender
-			q1 = -q1Odd[hilbertIdx]
-			q1Odd[hilbertIdx] = hilbertTempReal
-			q1 += hilbertTempReal
-			q1 -= prevq1Odd
-			prevq1Odd = b * prevq1InputOdd
-			q1 += prevq1Odd
-			prevq1InputOdd = detrender
-			q1 *= adjustedPrevPeriod
-			if today >= startIdx {
-				outQuadrature[outIdx] = q1
-				outInPhase[outIdx] = i1ForOddPrev3
-				outIdx++
-			}
-			hilbertTempReal = a * i1ForOddPrev3
-			jI = -jIOdd[hilbertIdx]
-			jIOdd[hilbertIdx] = hilbertTempReal
-			jI += hilbertTempReal
-			jI -= prevJIOdd
-			prevJIOdd = b * prevJIInputOdd
-			jI += prevJIOdd
-			prevJIInputOdd = i1ForOddPrev3
-			jI *= adjustedPrevPeriod
-			hilbertTempReal = a * q1
-			jQ = -jQOdd[hilbertIdx]
-			jQOdd[hilbertIdx] = hilbertTempReal
-			jQ += hilbertTempReal
-			jQ -= prevJQOdd
-			prevJQOdd = b * prevJQInputOdd
-			jQ += prevJQOdd
-			prevJQInputOdd = q1
-			jQ *= adjustedPrevPeriod
-			q2 = (0.2 * (q1 + jI)) + (0.8 * prevq2)
-			i2 = (0.2 * (i1ForOddPrev3 - jQ)) + (0.8 * previ2)
-			i1ForEvenPrev3 = i1ForEvenPrev2
-			i1ForEvenPrev2 = detrender
-		}
-		Re = (0.2 * ((i2 * previ2) + (q2 * prevq2))) + (0.8 * Re)
-		Im = (0.2 * ((i2 * prevq2) - (q2 * previ2))) + (0.8 * Im)
-		prevq2 = q2
-		previ2 = i2
-		tempReal = period
-		if (Im != 0.0) && (Re != 0.0) {
-			period = 360.0 / (math.Atan(Im/Re) * rad2Deg)
-		}
-		tempReal2 := 1.5 * tempReal
-		if period > tempReal2 {
-			period = tempReal2
-		}
-		tempReal2 = 0.67 * tempReal
-		if period < tempReal2 {
-			period = tempReal2
-		}
-		if period < 6 {
-			period = 6
-		} else if period > 50 {
-			period = 50
-		}
-		period = (0.2 * period) + (0.8 * tempReal)
-		today++
-	}
-	return outInPhase, outQuadrature
-}
-
-// HtSine - Hilbert Transform - SineWave (lookback=63)
-func HtSine(inReal []float64) ([]float64, []float64) {
-
-	outSine := make([]float64, len(inReal))
-	outLeadSine := make([]float64, len(inReal))
-
-	a := 0.0962
-	b := 0.5769
-	detrenderOdd := make([]float64, 3)
-	detrenderEven := make([]float64, 3)
-	q1Odd := make([]float64, 3)
-	q1Even := make([]float64, 3)
-	jIOdd := make([]float64, 3)
-	jIEven := make([]float64, 3)
-	jQOdd := make([]float64, 3)
-	jQEven := make([]float64, 3)
-	smoothPriceIdx := 0
-	maxIdxSmoothPrice := (50 - 1)
-	smoothPrice := make([]float64, maxIdxSmoothPrice+1)
-	tempReal := math.Atan(1)
-	rad2Deg := 45.0 / tempReal
-	deg2Rad := 1.0 / rad2Deg
-	constDeg2RadBy360 := tempReal * 8.0
-	lookbackTotal := 63
-	startIdx := lookbackTotal
-	trailingWMAIdx := startIdx - lookbackTotal
-	today := trailingWMAIdx
-	tempReal = inReal[today]
-	today++
-	periodWMASub := tempReal
-	periodWMASum := tempReal
-	tempReal = inReal[today]
-	today++
-	periodWMASub += tempReal
-	periodWMASum += tempReal * 2.0
-	tempReal = inReal[today]
-	today++
-	periodWMASub += tempReal
-	periodWMASum += tempReal * 3.0
-	trailingWMAValue := 0.0
-	i := 34
-	smoothedValue := 0.0
-	for ok := true; ok; {
-		tempReal = inReal[today]
-		today++
-		periodWMASub += tempReal
-		periodWMASub -= trailingWMAValue
-		periodWMASum += tempReal * 4.0
-		trailingWMAValue = inReal[trailingWMAIdx]
-		trailingWMAIdx++
-		smoothedValue = periodWMASum * 0.1
-		periodWMASum -= periodWMASub
-		i--
-		ok = i != 0
-	}
-
-	hilbertIdx := 0
-	detrender := 0.0
-	prevDetrenderOdd := 0.0
-	prevDetrenderEven := 0.0
-	prevDetrenderInputOdd := 0.0
-	prevDetrenderInputEven := 0.0
-	q1 := 0.0
-	prevq1Odd := 0.0
-	prevq1Even := 0.0
-	prevq1InputOdd := 0.0
-	prevq1InputEven := 0.0
-	jI := 0.0
-	prevJIOdd := 0.0
-	prevJIEven := 0.0
-	prevJIInputOdd := 0.0
-	prevJIInputEven := 0.0
-	jQ := 0.0
-	prevJQOdd := 0.0
-	prevJQEven := 0.0
-	prevJQInputOdd := 0.0
-	prevJQInputEven := 0.0
-	period := 0.0
-	outIdx := 63
-	previ2 := 0.0
-	prevq2 := 0.0
-	Re := 0.0
-	Im := 0.0
-	i1ForOddPrev3 := 0.0
-	i1ForEvenPrev3 := 0.0
-	i1ForOddPrev2 := 0.0
-	i1ForEvenPrev2 := 0.0
-	smoothPeriod := 0.0
-	dcPhase := 0.0
-	hilbertTempReal := 0.0
-	q2 := 0.0
-	i2 := 0.0
-	for today < len(inReal) {
-		adjustedPrevPeriod := (0.075 * period) + 0.54
-		todayValue := inReal[today]
-		periodWMASub += todayValue
-		periodWMASub -= trailingWMAValue
-		periodWMASum += todayValue * 4.0
-		trailingWMAValue = inReal[trailingWMAIdx]
-		trailingWMAIdx++
-		smoothedValue = periodWMASum * 0.1
-		periodWMASum -= periodWMASub
-		smoothPrice[smoothPriceIdx] = smoothedValue
-		if (today % 2) == 0 {
-			hilbertTempReal = a * smoothedValue
-			detrender = -detrenderEven[hilbertIdx]
-			detrenderEven[hilbertIdx] = hilbertTempReal
-			detrender += hilbertTempReal
-			detrender -= prevDetrenderEven
-			prevDetrenderEven = b * prevDetrenderInputEven
-			detrender += prevDetrenderEven
-			prevDetrenderInputEven = smoothedValue
-			detrender *= adjustedPrevPeriod
-			hilbertTempReal = a * detrender
-			q1 = -q1Even[hilbertIdx]
-			q1Even[hilbertIdx] = hilbertTempReal
-			q1 += hilbertTempReal
-			q1 -= prevq1Even
-			prevq1Even = b * prevq1InputEven
-			q1 += prevq1Even
-			prevq1InputEven = detrender
-			q1 *= adjustedPrevPeriod
-			hilbertTempReal = a * i1ForEvenPrev3
-			jI = -jIEven[hilbertIdx]
-			jIEven[hilbertIdx] = hilbertTempReal
-			jI += hilbertTempReal
-			jI -= prevJIEven
-			prevJIEven = b * prevJIInputEven
-			jI += prevJIEven
-			prevJIInputEven = i1ForEvenPrev3
-			jI *= adjustedPrevPeriod
-			hilbertTempReal = a * q1
-			jQ = -jQEven[hilbertIdx]
-			jQEven[hilbertIdx] = hilbertTempReal
-			jQ += hilbertTempReal
-			jQ -= prevJQEven
-			prevJQEven = b * prevJQInputEven
-			jQ += prevJQEven
-			prevJQInputEven = q1
-			jQ *= adjustedPrevPeriod
-			hilbertIdx++
-			if hilbertIdx == 3 {
-				hilbertIdx = 0
-			}
-			q2 = (0.2 * (q1 + jI)) + (0.8 * prevq2)
-			i2 = (0.2 * (i1ForEvenPrev3 - jQ)) + (0.8 * previ2)
-			i1ForOddPrev3 = i1ForOddPrev2
-			i1ForOddPrev2 = detrender
-		} else {
-			hilbertTempReal = a * smoothedValue
-			detrender = -detrenderOdd[hilbertIdx]
-			detrenderOdd[hilbertIdx] = hilbertTempReal
-			detrender += hilbertTempReal
-			detrender -= prevDetrenderOdd
-			prevDetrenderOdd = b * prevDetrenderInputOdd
-			detrender += prevDetrenderOdd
-			prevDetrenderInputOdd = smoothedValue
-			detrender *= adjustedPrevPeriod
-			hilbertTempReal = a * detrender
-			q1 = -q1Odd[hilbertIdx]
-			q1Odd[hilbertIdx] = hilbertTempReal
-			q1 += hilbertTempReal
-			q1 -= prevq1Odd
-			prevq1Odd = b * prevq1InputOdd
-			q1 += prevq1Odd
-			prevq1InputOdd = detrender
-			q1 *= adjustedPrevPeriod
-			hilbertTempReal = a * i1ForOddPrev3
-			jI = -jIOdd[hilbertIdx]
-			jIOdd[hilbertIdx] = hilbertTempReal
-			jI += hilbertTempReal
-			jI -= prevJIOdd
-			prevJIOdd = b * prevJIInputOdd
-			jI += prevJIOdd
-			prevJIInputOdd = i1ForOddPrev3
-			jI *= adjustedPrevPeriod
-			hilbertTempReal = a * q1
-			jQ = -jQOdd[hilbertIdx]
-			jQOdd[hilbertIdx] = hilbertTempReal
-			jQ += hilbertTempReal
-			jQ -= prevJQOdd
-			prevJQOdd = b * prevJQInputOdd
-			jQ += prevJQOdd
-			prevJQInputOdd = q1
-			jQ *= adjustedPrevPeriod
-			q2 = (0.2 * (q1 + jI)) + (0.8 * prevq2)
-			i2 = (0.2 * (i1ForOddPrev3 - jQ)) + (0.8 * previ2)
-			i1ForEvenPrev3 = i1ForEvenPrev2
-			i1ForEvenPrev2 = detrender
-		}
-		Re = (0.2 * ((i2 * previ2) + (q2 * prevq2))) + (0.8 * Re)
-		Im = (0.2 * ((i2 * prevq2) - (q2 * previ2))) + (0.8 * Im)
-		prevq2 = q2
-		previ2 = i2
-		tempReal = period
-		if (Im != 0.0) && (Re != 0.0) {
-			period = 360.0 / (math.Atan(Im/Re) * rad2Deg)
-		}
-		tempReal2 := 1.5 * tempReal
-		if period > tempReal2 {
-			period = tempReal2
-		}
-		tempReal2 = 0.67 * tempReal
-		if period < tempReal2 {
-			period = tempReal2
-		}
-		if period < 6 {
-			period = 6
-		} else if period > 50 {
-			period = 50
-		}
-		period = (0.2 * period) + (0.8 * tempReal)
-		smoothPeriod = (0.33 * period) + (0.67 * smoothPeriod)
-		DCPeriod := smoothPeriod + 0.5
-		DCPeriodInt := math.Floor(DCPeriod)
-		realPart := 0.0
-		imagPart := 0.0
-		idx := smoothPriceIdx
-		for i := 0; i < int(DCPeriodInt); i++ {
-			tempReal = (float64(i) * constDeg2RadBy360) / (DCPeriodInt * 1.0)
-			tempReal2 = smoothPrice[idx]
-			realPart += math.Sin(tempReal) * tempReal2
-			imagPart += math.Cos(tempReal) * tempReal2
-			if idx == 0 {
-				idx = 50 - 1
-			} else {
-				idx--
-			}
-		}
-		tempReal = math.Abs(imagPart)
-		if tempReal > 0.0 {
-			dcPhase = math.Atan(realPart/imagPart) * rad2Deg
-		} else if tempReal <= 0.01 {
-			if realPart < 0.0 {
-				dcPhase -= 90.0
-			} else if realPart > 0.0 {
-				dcPhase += 90.0
-			}
-		}
-		dcPhase += 90.0
-		dcPhase += 360.0 / smoothPeriod
-		if imagPart < 0.0 {
-			dcPhase += 180.0
-		}
-		if dcPhase > 315.0 {
-			dcPhase -= 360.0
-		}
-		if today >= startIdx {
-			outSine[outIdx] = math.Sin(dcPhase * deg2Rad)
-			outLeadSine[outIdx] = math.Sin((dcPhase + 45) * deg2Rad)
-			outIdx++
-		}
-		smoothPriceIdx++
-		if smoothPriceIdx > maxIdxSmoothPrice {
-			smoothPriceIdx = 0
-		}
-
-		today++
-	}
-	return outSine, outLeadSine
-}
-
-// HtTrendMode - Hilbert Transform - Trend vs Cycle Mode (lookback=63)
-func HtTrendMode(inReal []float64) []float64 {
-
-	outReal := make([]float64, len(inReal))
-	a := 0.0962
-	b := 0.5769
-	detrenderOdd := make([]float64, 3)
-	detrenderEven := make([]float64, 3)
-	q1Odd := make([]float64, 3)
-	q1Even := make([]float64, 3)
-	jIOdd := make([]float64, 3)
-	jIEven := make([]float64, 3)
-	jQOdd := make([]float64, 3)
-	jQEven := make([]float64, 3)
-	smoothPriceIdx := 0
-	maxIdxSmoothPrice := (50 - 1)
-	smoothPrice := make([]float64, maxIdxSmoothPrice+1)
-	iTrend1 := 0.0
-	iTrend2 := 0.0
-	iTrend3 := 0.0
-	daysInTrend := 0
-	prevdcPhase := 0.0
-	dcPhase := 0.0
-	prevSine := 0.0
-	sine := 0.0
-	prevLeadSine := 0.0
-	leadSine := 0.0
-	tempReal := math.Atan(1)
-	rad2Deg := 45.0 / tempReal
-	deg2Rad := 1.0 / rad2Deg
-	constDeg2RadBy360 := tempReal * 8.0
-	lookbackTotal := 63
-	startIdx := lookbackTotal
-	trailingWMAIdx := startIdx - lookbackTotal
-	today := trailingWMAIdx
-	tempReal = inReal[today]
-	today++
-	periodWMASub := tempReal
-	periodWMASum := tempReal
-	tempReal = inReal[today]
-	today++
-	periodWMASub += tempReal
-	periodWMASum += tempReal * 2.0
-	tempReal = inReal[today]
-	today++
-	periodWMASub += tempReal
-	periodWMASum += tempReal * 3.0
-	trailingWMAValue := 0.0
-	i := 34
-
-	for ok := true; ok; {
-		tempReal = inReal[today]
-		today++
-		periodWMASub += tempReal
-		periodWMASub -= trailingWMAValue
-		periodWMASum += tempReal * 4.0
-		trailingWMAValue = inReal[trailingWMAIdx]
-		trailingWMAIdx++
-		//smoothedValue := periodWMASum * 0.1
-		periodWMASum -= periodWMASub
-		i--
-		ok = i != 0
-	}
-
-	hilbertIdx := 0
-	detrender := 0.0
-	prevDetrenderOdd := 0.0
-	prevDetrenderEven := 0.0
-	prevDetrenderInputOdd := 0.0
-	prevDetrenderInputEven := 0.0
-	q1 := 0.0
-	prevq1Odd := 0.0
-	prevq1Even := 0.0
-	prevq1InputOdd := 0.0
-	prevq1InputEven := 0.0
-	jI := 0.0
-	prevJIOdd := 0.0
-	prevJIEven := 0.0
-	prevJIInputOdd := 0.0
-	prevJIInputEven := 0.0
-	jQ := 0.0
-	prevJQOdd := 0.0
-	prevJQEven := 0.0
-	prevJQInputOdd := 0.0
-	prevJQInputEven := 0.0
-	period := 0.0
-	outIdx := 63
-	previ2 := 0.0
-	prevq2 := 0.0
-	Re := 0.0
-	Im := 0.0
-	i1ForOddPrev3 := 0.0
-	i1ForEvenPrev3 := 0.0
-	i1ForOddPrev2 := 0.0
-	i1ForEvenPrev2 := 0.0
-	smoothPeriod := 0.0
-	dcPhase = 0.0
-	smoothedValue := 0.0
-	hilbertTempReal := 0.0
-	q2 := 0.0
-	i2 := 0.0
-	for today < len(inReal) {
-		adjustedPrevPeriod := (0.075 * period) + 0.54
-		todayValue := inReal[today]
-		periodWMASub += todayValue
-		periodWMASub -= trailingWMAValue
-		periodWMASum += todayValue * 4.0
-		trailingWMAValue = inReal[trailingWMAIdx]
-		trailingWMAIdx++
-		smoothedValue = periodWMASum * 0.1
-		periodWMASum -= periodWMASub
-
-		smoothPrice[smoothPriceIdx] = smoothedValue
-		if (today % 2) == 0 {
-			hilbertTempReal = a * smoothedValue
-			detrender = -detrenderEven[hilbertIdx]
-			detrenderEven[hilbertIdx] = hilbertTempReal
-			detrender += hilbertTempReal
-			detrender -= prevDetrenderEven
-			prevDetrenderEven = b * prevDetrenderInputEven
-			detrender += prevDetrenderEven
-			prevDetrenderInputEven = smoothedValue
-			detrender *= adjustedPrevPeriod
-			hilbertTempReal = a * detrender
-			q1 = -q1Even[hilbertIdx]
-			q1Even[hilbertIdx] = hilbertTempReal
-			q1 += hilbertTempReal
-			q1 -= prevq1Even
-			prevq1Even = b * prevq1InputEven
-			q1 += prevq1Even
-			prevq1InputEven = detrender
-			q1 *= adjustedPrevPeriod
-			hilbertTempReal = a * i1ForEvenPrev3
-			jI = -jIEven[hilbertIdx]
-			jIEven[hilbertIdx] = hilbertTempReal
-			jI += hilbertTempReal
-			jI -= prevJIEven
-			prevJIEven = b * prevJIInputEven
-			jI += prevJIEven
-			prevJIInputEven = i1ForEvenPrev3
-			jI *= adjustedPrevPeriod
-			hilbertTempReal = a * q1
-			jQ = -jQEven[hilbertIdx]
-			jQEven[hilbertIdx] = hilbertTempReal
-			jQ += hilbertTempReal
-			jQ -= prevJQEven
-			prevJQEven = b * prevJQInputEven
-			jQ += prevJQEven
-			prevJQInputEven = q1
-			jQ *= adjustedPrevPeriod
-			hilbertIdx++
-			if hilbertIdx == 3 {
-				hilbertIdx = 0
-			}
-			q2 = (0.2 * (q1 + jI)) + (0.8 * prevq2)
-			i2 = (0.2 * (i1ForEvenPrev3 - jQ)) + (0.8 * previ2)
-			i1ForOddPrev3 = i1ForOddPrev2
-			i1ForOddPrev2 = detrender
-		} else {
-			hilbertTempReal = a * smoothedValue
-			detrender = -detrenderOdd[hilbertIdx]
-			detrenderOdd[hilbertIdx] = hilbertTempReal
-			detrender += hilbertTempReal
-			detrender -= prevDetrenderOdd
-			prevDetrenderOdd = b * prevDetrenderInputOdd
-			detrender += prevDetrenderOdd
-			prevDetrenderInputOdd = smoothedValue
-			detrender *= adjustedPrevPeriod
-			hilbertTempReal = a * detrender
-			q1 = -q1Odd[hilbertIdx]
-			q1Odd[hilbertIdx] = hilbertTempReal
-			q1 += hilbertTempReal
-			q1 -= prevq1Odd
-			prevq1Odd = b * prevq1InputOdd
-			q1 += prevq1Odd
-			prevq1InputOdd = detrender
-			q1 *= adjustedPrevPeriod
-			hilbertTempReal = a * i1ForOddPrev3
-			jI = -jIOdd[hilbertIdx]
-			jIOdd[hilbertIdx] = hilbertTempReal
-			jI += hilbertTempReal
-			jI -= prevJIOdd
-			prevJIOdd = b * prevJIInputOdd
-			jI += prevJIOdd
-			prevJIInputOdd = i1ForOddPrev3
-			jI *= adjustedPrevPeriod
-			hilbertTempReal = a * q1
-			jQ = -jQOdd[hilbertIdx]
-			jQOdd[hilbertIdx] = hilbertTempReal
-			jQ += hilbertTempReal
-			jQ -= prevJQOdd
-			prevJQOdd = b * prevJQInputOdd
-			jQ += prevJQOdd
-			prevJQInputOdd = q1
-			jQ *= adjustedPrevPeriod
-			q2 = (0.2 * (q1 + jI)) + (0.8 * prevq2)
-			i2 = (0.2 * (i1ForOddPrev3 - jQ)) + (0.8 * previ2)
-			i1ForEvenPrev3 = i1ForEvenPrev2
-			i1ForEvenPrev2 = detrender
-		}
-		Re = (0.2 * ((i2 * previ2) + (q2 * prevq2))) + (0.8 * Re)
-		Im = (0.2 * ((i2 * prevq2) - (q2 * previ2))) + (0.8 * Im)
-		prevq2 = q2
-		previ2 = i2
-		tempReal = period
-		if (Im != 0.0) && (Re != 0.0) {
-			period = 360.0 / (math.Atan(Im/Re) * rad2Deg)
-		}
-		tempReal2 := 1.5 * tempReal
-		if period > tempReal2 {
-			period = tempReal2
-		}
-		tempReal2 = 0.67 * tempReal
-		if period < tempReal2 {
-			period = tempReal2
-		}
-		if period < 6 {
-			period = 6
-		} else if period > 50 {
-			period = 50
-		}
-		period = (0.2 * period) + (0.8 * tempReal)
-		smoothPeriod = (0.33 * period) + (0.67 * smoothPeriod)
-		prevdcPhase = dcPhase
-		DCPeriod := smoothPeriod + 0.5
-		DCPeriodInt := math.Floor(DCPeriod)
-		realPart := 0.0
-		imagPart := 0.0
-		idx := smoothPriceIdx
-		for i := 0; i < int(DCPeriodInt); i++ {
-			tempReal = (float64(i) * constDeg2RadBy360) / (DCPeriodInt * 1.0)
-			tempReal2 = smoothPrice[idx]
-			realPart += math.Sin(tempReal) * tempReal2
-			imagPart += math.Cos(tempReal) * tempReal2
-			if idx == 0 {
-				idx = 50 - 1
-			} else {
-				idx--
-			}
-		}
-		tempReal = math.Abs(imagPart)
-		if tempReal > 0.0 {
-			dcPhase = math.Atan(realPart/imagPart) * rad2Deg
-		} else if tempReal <= 0.01 {
-			if realPart < 0.0 {
-				dcPhase -= 90.0
-			} else if realPart > 0.0 {
-				dcPhase += 90.0
-			}
-		}
-		dcPhase += 90.0
-		dcPhase += 360.0 / smoothPeriod
-		if imagPart < 0.0 {
-			dcPhase += 180.0
-		}
-		if dcPhase > 315.0 {
-			dcPhase -= 360.0
-		}
-		prevSine = sine
-		prevLeadSine = leadSine
-		sine = math.Sin(dcPhase * deg2Rad)
-		leadSine = math.Sin((dcPhase + 45) * deg2Rad)
-		DCPeriod = smoothPeriod + 0.5
-		DCPeriodInt = math.Floor(DCPeriod)
-		idx = today
-		tempReal = 0.0
-		for i := 0; i < int(DCPeriodInt); i++ {
-			tempReal += inReal[idx]
-			idx--
-		}
-		if DCPeriodInt > 0 {
-			tempReal = tempReal / (DCPeriodInt * 1.0)
-		}
-		trendline := (4.0*tempReal + 3.0*iTrend1 + 2.0*iTrend2 + iTrend3) / 10.0
-		iTrend3 = iTrend2
-		iTrend2 = iTrend1
-		iTrend1 = tempReal
-		trend := 1
-		if ((sine > leadSine) && (prevSine <= prevLeadSine)) || ((sine < leadSine) && (prevSine >= prevLeadSine)) {
-			daysInTrend = 0
-			trend = 0
-		}
-		daysInTrend++
-		if float64(daysInTrend) < (0.5 * smoothPeriod) {
-			trend = 0
-		}
-		tempReal = dcPhase - prevdcPhase
-		if (smoothPeriod != 0.0) && ((tempReal > (0.67 * 360.0 / smoothPeriod)) && (tempReal < (1.5 * 360.0 / smoothPeriod))) {
-			trend = 0
-		}
-		tempReal = smoothPrice[smoothPriceIdx]
-		if (trendline != 0.0) && (math.Abs((tempReal-trendline)/trendline) >= 0.015) {
-			trend = 1
-		}
-		if today >= startIdx {
-			outReal[outIdx] = float64(trend)
-			outIdx++
-		}
-		smoothPriceIdx++
-		if smoothPriceIdx > maxIdxSmoothPrice {
-			smoothPriceIdx = 0
-		}
-
-		today++
-	}
-	return outReal
-}
-
 /* Statistic Functions */
 
 // Beta - Beta
 func Beta(inReal0 []float64, inReal1 []float64, inTimePeriod int) []float64 {
-
 	outReal := make([]float64, len(inReal0))
 
 	x := 0.0
@@ -3444,7 +1664,6 @@ func Beta(inReal0 []float64, inReal1 []float64, inTimePeriod int) []float64 {
 
 // Correl - Pearson's Correlation Coefficient (r)
 func Correl(inReal0 []float64, inReal1 []float64, inTimePeriod int) []float64 {
-
 	outReal := make([]float64, len(inReal0))
 
 	inTimePeriodF := float64(inTimePeriod)
@@ -3500,161 +1719,8 @@ func Correl(inReal0 []float64, inReal1 []float64, inTimePeriod int) []float64 {
 	return outReal
 }
 
-// LinearReg - Linear Regression
-func LinearReg(inReal []float64, inTimePeriod int) []float64 {
-
-	outReal := make([]float64, len(inReal))
-
-	inTimePeriodF := float64(inTimePeriod)
-	lookbackTotal := inTimePeriod
-	startIdx := lookbackTotal
-	outIdx := startIdx - 1
-	today := startIdx - 1
-	sumX := inTimePeriodF * (inTimePeriodF - 1) * 0.5
-	sumXSqr := inTimePeriodF * (inTimePeriodF - 1) * (2*inTimePeriodF - 1) / 6
-	divisor := sumX*sumX - inTimePeriodF*sumXSqr
-	//initialize values of sumY and sumXY over first (inTimePeriod) input values
-	sumXY := 0.0
-	sumY := 0.0
-	i := inTimePeriod
-	for i != 0 {
-		i--
-		tempValue1 := inReal[today-i]
-		sumY += tempValue1
-		sumXY += float64(i) * tempValue1
-	}
-	for today < len(inReal) {
-		//sumX and sumXY are already available for first output value
-		if today > startIdx-1 {
-			tempValue2 := inReal[today-inTimePeriod]
-			sumXY += sumY - inTimePeriodF*tempValue2
-			sumY += inReal[today] - tempValue2
-		}
-		m := (inTimePeriodF*sumXY - sumX*sumY) / divisor
-		b := (sumY - m*sumX) / inTimePeriodF
-		outReal[outIdx] = b + m*(inTimePeriodF-1)
-		outIdx++
-		today++
-	}
-	return outReal
-}
-
-// LinearRegAngle - Linear Regression Angle
-func LinearRegAngle(inReal []float64, inTimePeriod int) []float64 {
-
-	outReal := make([]float64, len(inReal))
-
-	inTimePeriodF := float64(inTimePeriod)
-	lookbackTotal := inTimePeriod
-	startIdx := lookbackTotal
-	outIdx := startIdx - 1
-	today := startIdx - 1
-	sumX := inTimePeriodF * (inTimePeriodF - 1) * 0.5
-	sumXSqr := inTimePeriodF * (inTimePeriodF - 1) * (2*inTimePeriodF - 1) / 6
-	divisor := sumX*sumX - inTimePeriodF*sumXSqr
-	//initialize values of sumY and sumXY over first (inTimePeriod) input values
-	sumXY := 0.0
-	sumY := 0.0
-	i := inTimePeriod
-	for i != 0 {
-		i--
-		tempValue1 := inReal[today-i]
-		sumY += tempValue1
-		sumXY += float64(i) * tempValue1
-	}
-	for today < len(inReal) {
-		//sumX and sumXY are already available for first output value
-		if today > startIdx-1 {
-			tempValue2 := inReal[today-inTimePeriod]
-			sumXY += sumY - inTimePeriodF*tempValue2
-			sumY += inReal[today] - tempValue2
-		}
-		m := (inTimePeriodF*sumXY - sumX*sumY) / divisor
-		outReal[outIdx] = math.Atan(m) * (180.0 / math.Pi)
-		outIdx++
-		today++
-	}
-	return outReal
-}
-
-// LinearRegIntercept - Linear Regression Intercept
-func LinearRegIntercept(inReal []float64, inTimePeriod int) []float64 {
-
-	outReal := make([]float64, len(inReal))
-
-	inTimePeriodF := float64(inTimePeriod)
-	lookbackTotal := inTimePeriod
-	startIdx := lookbackTotal
-	outIdx := startIdx - 1
-	today := startIdx - 1
-	sumX := inTimePeriodF * (inTimePeriodF - 1) * 0.5
-	sumXSqr := inTimePeriodF * (inTimePeriodF - 1) * (2*inTimePeriodF - 1) / 6
-	divisor := sumX*sumX - inTimePeriodF*sumXSqr
-	//initialize values of sumY and sumXY over first (inTimePeriod) input values
-	sumXY := 0.0
-	sumY := 0.0
-	i := inTimePeriod
-	for i != 0 {
-		i--
-		tempValue1 := inReal[today-i]
-		sumY += tempValue1
-		sumXY += float64(i) * tempValue1
-	}
-	for today < len(inReal) {
-		//sumX and sumXY are already available for first output value
-		if today > startIdx-1 {
-			tempValue2 := inReal[today-inTimePeriod]
-			sumXY += sumY - inTimePeriodF*tempValue2
-			sumY += inReal[today] - tempValue2
-		}
-		m := (inTimePeriodF*sumXY - sumX*sumY) / divisor
-		outReal[outIdx] = (sumY - m*sumX) / inTimePeriodF
-		outIdx++
-		today++
-	}
-	return outReal
-}
-
-// LinearRegSlope - Linear Regression Slope
-func LinearRegSlope(inReal []float64, inTimePeriod int) []float64 {
-
-	outReal := make([]float64, len(inReal))
-
-	inTimePeriodF := float64(inTimePeriod)
-	lookbackTotal := inTimePeriod
-	startIdx := lookbackTotal
-	outIdx := startIdx - 1
-	today := startIdx - 1
-	sumX := inTimePeriodF * (inTimePeriodF - 1) * 0.5
-	sumXSqr := inTimePeriodF * (inTimePeriodF - 1) * (2*inTimePeriodF - 1) / 6
-	divisor := sumX*sumX - inTimePeriodF*sumXSqr
-	//initialize values of sumY and sumXY over first (inTimePeriod) input values
-	sumXY := 0.0
-	sumY := 0.0
-	i := inTimePeriod
-	for i != 0 {
-		i--
-		tempValue1 := inReal[today-i]
-		sumY += tempValue1
-		sumXY += float64(i) * tempValue1
-	}
-	for today < len(inReal) {
-		//sumX and sumXY are already available for first output value
-		if today > startIdx-1 {
-			tempValue2 := inReal[today-inTimePeriod]
-			sumXY += sumY - inTimePeriodF*tempValue2
-			sumY += inReal[today] - tempValue2
-		}
-		outReal[outIdx] = (inTimePeriodF*sumXY - sumX*sumY) / divisor
-		outIdx++
-		today++
-	}
-	return outReal
-}
-
 // StdDev - Standard Deviation
 func StdDev(inReal []float64, inTimePeriod int, inNbDev float64) []float64 {
-
 	outReal := Var(inReal, inTimePeriod)
 
 	if inNbDev != 1.0 {
@@ -3681,7 +1747,6 @@ func StdDev(inReal []float64, inTimePeriod int, inNbDev float64) []float64 {
 
 // Tsf - Time Series Forecast
 func Tsf(inReal []float64, inTimePeriod int) []float64 {
-
 	outReal := make([]float64, len(inReal))
 
 	inTimePeriodF := float64(inTimePeriod)
@@ -3720,7 +1785,6 @@ func Tsf(inReal []float64, inTimePeriod int) []float64 {
 
 // Var - Variance
 func Var(inReal []float64, inTimePeriod int) []float64 {
-
 	outReal := make([]float64, len(inReal))
 
 	nbInitialElementNeeded := inTimePeriod - 1
@@ -3827,58 +1891,4 @@ func Crossunder(series1 []float64, series2 []float64) bool {
 	N := len(series1)
 
 	return series1[N-1] <= series2[N-1] && series1[N-2] > series2[N-2]
-}
-
-// GroupCandles groups a set of candles in another set of candles, basing on a grouping factor.
-//
-// This is pretty useful if you want to transform, for example, 15min candles into 1h candles using same data.
-//
-// This avoid calling multiple times the exchange for multiple contexts.
-//
-// Example:
-//     To transform 15 minute candles in 30 minutes candles you have a grouping factor = 2
-//
-//     To transform 15 minute candles in 1 hour candles you have a grouping factor = 4
-//
-//     To transform 30 minute candles in 1 hour candles you have a grouping factor = 2
-func GroupCandles(highs []float64, opens []float64, closes []float64, lows []float64, groupingFactor int) ([]float64, []float64, []float64, []float64, error) {
-	N := len(highs)
-	if groupingFactor == 0 {
-		return nil, nil, nil, nil, errors.New("Grouping factor must be > 0")
-	} else if groupingFactor == 1 {
-		return highs, opens, closes, lows, nil // no need to group in this case, return the parameters.
-	}
-	if N%groupingFactor > 0 {
-		return nil, nil, nil, nil, errors.New("Cannot group properly, need a groupingFactor which is a factor of the number of candles")
-	}
-
-	groupedN := N / groupingFactor
-
-	groupedHighs := make([]float64, groupedN)
-	groupedOpens := make([]float64, groupedN)
-	groupedCloses := make([]float64, groupedN)
-	groupedLows := make([]float64, groupedN)
-
-	lastOfCurrentGroup := groupingFactor - 1
-
-	k := 0
-	for i := 0; i < N; i += groupingFactor { // scan all param candles
-		groupedOpens[k] = opens[i]
-		groupedCloses[k] = closes[i+lastOfCurrentGroup]
-
-		groupedHighs[k] = highs[i]
-		groupedLows[k] = lows[i]
-
-		endOfCurrentGroup := i + lastOfCurrentGroup
-		for j := i + 1; j <= endOfCurrentGroup; j++ { // group high lows candles here
-			if lows[j] < groupedLows[k] {
-				groupedLows[k] = lows[j]
-			}
-			if highs[j] > groupedHighs[k] {
-				groupedHighs[k] = highs[j]
-			}
-		}
-		k++
-	}
-	return groupedHighs, groupedOpens, groupedCloses, groupedLows, nil
 }

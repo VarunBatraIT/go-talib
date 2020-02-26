@@ -94,7 +94,6 @@ print(' '.join([str(p) for p in result]).replace('nan','0.0'))`,
 	equals(t, len(goResult), len(pyResult))
 
 	for i := 0; i < len(goResult); i++ {
-
 		if (goResult[i] < -0.00000000000001) || (goResult[i] < 0.00000000000001) {
 			goResult[i] = 0.0
 		}
@@ -120,7 +119,6 @@ print(' '.join([str(p) for p in result]).replace('nan','0.0'))`,
 			fmt.Printf("%s:%d:\n\tgo!: %#v\n\tpy!: %#v\n", filepath.Base(file), line, s1, s2)
 			t.FailNow()
 		}
-
 	}
 }
 

@@ -4,7 +4,6 @@ import "math"
 
 // Ma - Moving average
 func Ma(inReal []float64, inTimePeriod int, inMAType MaType) []float64 {
-
 	outReal := make([]float64, len(inReal))
 
 	if inTimePeriod == 1 {
@@ -90,7 +89,6 @@ func Ema(inReal []float64, inTimePeriod int) []float64 {
 
 // Mama - MESA Adaptive Moving Average (lookback=32)
 func Mama(inReal []float64, inFastLimit float64, inSlowLimit float64) ([]float64, []float64) {
-
 	outMAMA := make([]float64, len(inReal))
 	outFAMA := make([]float64, len(inReal))
 
@@ -211,7 +209,6 @@ func Mama(inReal []float64, inFastLimit float64, inSlowLimit float64) ([]float64
 		q2, i2 := 0.0, 0.0
 		tempReal2 := 0.0
 		if (today % 2) == 0 {
-
 			hilbertTempReal = a * smoothedValue
 			detrender = -detrenderEven[hilbertIdx]
 			detrenderEven[hilbertIdx] = hilbertTempReal
@@ -265,7 +262,6 @@ func Mama(inReal []float64, inFastLimit float64, inSlowLimit float64) ([]float64
 				tempReal2 = 0.0
 			}
 		} else {
-
 			hilbertTempReal = a * smoothedValue
 			detrender = -detrenderOdd[hilbertIdx]
 			detrenderOdd[hilbertIdx] = hilbertTempReal
@@ -366,7 +362,6 @@ func Mama(inReal []float64, inFastLimit float64, inSlowLimit float64) ([]float64
 
 // MaVp - Moving average with variable period
 func MaVp(inReal []float64, inPeriods []float64, inMinPeriod int, inMaxPeriod int, inMAType MaType) []float64 {
-
 	outReal := make([]float64, len(inReal))
 	startIdx := inMaxPeriod - 1
 	outputSize := len(inReal)
@@ -400,7 +395,6 @@ func MaVp(inReal []float64, inPeriods []float64, inMinPeriod int, inMaxPeriod in
 
 // Kama - Kaufman Adaptive Moving Average
 func Kama(inReal []float64, inTimePeriod int) []float64 {
-
 	outReal := make([]float64, len(inReal))
 
 	constMax := 2.0 / (30.0 + 1.0)
@@ -477,11 +471,9 @@ func Kama(inReal []float64, inTimePeriod int) []float64 {
 	return outReal
 }
 
-
 // Macd - Moving Average Convergence/Divergence
 // unstable period ~= 100
 func Macd(inReal []float64, inFastPeriod int, inSlowPeriod int, inSignalPeriod int) ([]float64, []float64, []float64) {
-
 	if inSlowPeriod < inFastPeriod {
 		inSlowPeriod, inFastPeriod = inFastPeriod, inSlowPeriod
 	}
@@ -528,7 +520,6 @@ func Macd(inReal []float64, inFastPeriod int, inSlowPeriod int, inSignalPeriod i
 // MacdExt - MACD with controllable MA type
 // unstable period ~= 100
 func MacdExt(inReal []float64, inFastPeriod int, inFastMAType MaType, inSlowPeriod int, inSlowMAType MaType, inSignalPeriod int, inSignalMAType MaType) ([]float64, []float64, []float64) {
-
 	lookbackLargest := 0
 	if inFastPeriod < inSlowPeriod {
 		lookbackLargest = inSlowPeriod
@@ -565,11 +556,8 @@ func MacdFix(inReal []float64, inSignalPeriod int) ([]float64, []float64, []floa
 	return Macd(inReal, 0, 0, inSignalPeriod)
 }
 
-
-
 // Sma - Simple Moving Average
 func Sma(inReal []float64, inTimePeriod int) []float64 {
-
 	outReal := make([]float64, len(inReal))
 
 	lookbackTotal := inTimePeriod - 1
@@ -600,7 +588,6 @@ func Sma(inReal []float64, inTimePeriod int) []float64 {
 
 // T3 - Triple Exponential Moving Average (T3) (lookback=6*inTimePeriod)
 func T3(inReal []float64, inTimePeriod int, inVFactor float64) []float64 {
-
 	outReal := make([]float64, len(inReal))
 
 	lookbackTotal := 6 * (inTimePeriod - 1)
@@ -694,7 +681,6 @@ func T3(inReal []float64, inTimePeriod int, inVFactor float64) []float64 {
 
 // Tema - Triple Exponential Moving Average
 func Tema(inReal []float64, inTimePeriod int) []float64 {
-
 	outReal := make([]float64, len(inReal))
 	firstEMA := Ema(inReal, inTimePeriod)
 	secondEMA := Ema(firstEMA[inTimePeriod-1:], inTimePeriod)
@@ -716,7 +702,6 @@ func Tema(inReal []float64, inTimePeriod int) []float64 {
 
 // Trima - Triangular Moving Average
 func Trima(inReal []float64, inTimePeriod int) []float64 {
-
 	outReal := make([]float64, len(inReal))
 
 	lookbackTotal := inTimePeriod - 1
@@ -768,10 +753,9 @@ func Trima(inReal []float64, inTimePeriod int) []float64 {
 			outReal[outIdx] = numerator * factor
 			outIdx++
 		}
-
 	} else {
 
-		i := (inTimePeriod >> 1)
+		i := inTimePeriod >> 1
 		factor = float64(i) * (float64(i) + 1)
 		factor = 1.0 / factor
 		trailingIdx := startIdx - lookbackTotal
@@ -821,7 +805,6 @@ func Trima(inReal []float64, inTimePeriod int) []float64 {
 
 // Wma - Weighted Moving Average
 func Wma(inReal []float64, inTimePeriod int) []float64 {
-
 	outReal := make([]float64, len(inReal))
 
 	lookbackTotal := inTimePeriod - 1

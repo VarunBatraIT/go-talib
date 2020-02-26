@@ -161,7 +161,6 @@ func Div(inReal0 []float64, inReal1 []float64) []float64 {
 
 // Max - Highest value over a period
 func Max(inReal []float64, inTimePeriod int) []float64 {
-
 	outReal := make([]float64, len(inReal))
 
 	if inTimePeriod < 2 {
@@ -177,7 +176,6 @@ func Max(inReal []float64, inTimePeriod int) []float64 {
 	highest := 0.0
 
 	for today < len(outReal) {
-
 		tmp := inReal[today]
 
 		if highestIdx < trailingIdx {
@@ -207,7 +205,6 @@ func Max(inReal []float64, inTimePeriod int) []float64 {
 
 // MaxIndex - Index of highest value over a specified period
 func MaxIndex(inReal []float64, inTimePeriod int) []float64 {
-
 	outReal := make([]float64, len(inReal))
 
 	if inTimePeriod < 2 {
@@ -250,7 +247,6 @@ func MaxIndex(inReal []float64, inTimePeriod int) []float64 {
 
 // Min - Lowest value over a period
 func Min(inReal []float64, inTimePeriod int) []float64 {
-
 	outReal := make([]float64, len(inReal))
 
 	if inTimePeriod < 2 {
@@ -265,7 +261,6 @@ func Min(inReal []float64, inTimePeriod int) []float64 {
 	lowestIdx := -1
 	lowest := 0.0
 	for today < len(outReal) {
-
 		tmp := inReal[today]
 
 		if lowestIdx < trailingIdx {
@@ -295,7 +290,6 @@ func Min(inReal []float64, inTimePeriod int) []float64 {
 
 // MinIndex - Index of lowest value over a specified period
 func MinIndex(inReal []float64, inTimePeriod int) []float64 {
-
 	outReal := make([]float64, len(inReal))
 
 	if inTimePeriod < 2 {
@@ -337,7 +331,6 @@ func MinIndex(inReal []float64, inTimePeriod int) []float64 {
 
 // MinMax - Lowest and highest values over a specified period
 func MinMax(inReal []float64, inTimePeriod int) ([]float64, []float64) {
-
 	outMin := make([]float64, len(inReal))
 	outMax := make([]float64, len(inReal))
 
@@ -397,7 +390,6 @@ func MinMax(inReal []float64, inTimePeriod int) ([]float64, []float64) {
 
 // MinMaxIndex - Indexes of lowest and highest values over a specified period
 func MinMaxIndex(inReal []float64, inTimePeriod int) ([]float64, []float64) {
-
 	outMinIdx := make([]float64, len(inReal))
 	outMaxIdx := make([]float64, len(inReal))
 
@@ -475,7 +467,6 @@ func Sub(inReal0 []float64, inReal1 []float64) []float64 {
 
 // Sum - Vector summation
 func Sum(inReal []float64, inTimePeriod int) []float64 {
-
 	outReal := make([]float64, len(inReal))
 
 	lookbackTotal := inTimePeriod - 1

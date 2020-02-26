@@ -2,7 +2,6 @@ package indicators
 
 // MidPoint - MidPoint over period
 func MidPoint(inReal []float64, inTimePeriod int) []float64 {
-
 	outReal := make([]float64, len(inReal))
 	nbInitialElementNeeded := inTimePeriod - 1
 	startIdx := nbInitialElementNeeded
@@ -31,7 +30,6 @@ func MidPoint(inReal []float64, inTimePeriod int) []float64 {
 
 // MidPrice - Midpoint Price over period
 func MidPrice(inHigh []float64, inLow []float64, inTimePeriod int) []float64 {
-
 	outReal := make([]float64, len(inHigh))
 
 	nbInitialElementNeeded := inTimePeriod - 1
