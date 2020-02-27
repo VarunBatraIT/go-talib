@@ -361,7 +361,7 @@ func Mama(inReal []float64, inFastLimit float64, inSlowLimit float64) ([]float64
 }
 
 // MaVp - Moving average with variable period
-func MaVp(inReal []float64, inPeriods []float64, inMinPeriod int, inMaxPeriod int, inMAType MaType) []float64 {
+func MaVp(inReal, inPeriods []float64, inMinPeriod, inMaxPeriod int, inMAType MaType) []float64 {
 	outReal := make([]float64, len(inReal))
 	startIdx := inMaxPeriod - 1
 	outputSize := len(inReal)
@@ -473,7 +473,7 @@ func Kama(inReal []float64, inTimePeriod int) []float64 {
 
 // Macd - Moving Average Convergence/Divergence
 // unstable period ~= 100
-func Macd(inReal []float64, inFastPeriod int, inSlowPeriod int, inSignalPeriod int) ([]float64, []float64, []float64) {
+func Macd(inReal []float64, inFastPeriod, inSlowPeriod, inSignalPeriod int) ([]float64, []float64, []float64) {
 	if inSlowPeriod < inFastPeriod {
 		inSlowPeriod, inFastPeriod = inFastPeriod, inSlowPeriod
 	}
@@ -754,7 +754,6 @@ func Trima(inReal []float64, inTimePeriod int) []float64 {
 			outIdx++
 		}
 	} else {
-
 		i := inTimePeriod >> 1
 		factor = float64(i) * (float64(i) + 1)
 		factor = 1.0 / factor

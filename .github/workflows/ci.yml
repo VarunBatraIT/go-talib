@@ -25,6 +25,8 @@ jobs:
           golangci-lint run --verbose
         env:
           GO111MODULE: 'on'
+      - name: Install talib
+        run: sudo apt-get install libxml2-utils
       - name: test
         run: |
           make test_ci

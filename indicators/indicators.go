@@ -493,3 +493,456 @@ func Sum(inReal []float64, inTimePeriod int) []float64 {
 
 	return outReal
 }
+
+// Bop - Balance Of Power
+func Bop(inOpen, inHigh, inLow, inClose []float64) []float64 {
+	outReal := make([]float64, len(inClose))
+
+	for i := 0; i < len(inClose); i++ {
+		tempReal := inHigh[i] - inLow[i]
+		if tempReal < (0.00000000000001) {
+			outReal[i] = 0.0
+		} else {
+			outReal[i] = (inClose[i] - inOpen[i]) / tempReal
+		}
+	}
+
+	return outReal
+}
+
+// Mom - Momentum
+func Mom(inReal []float64, inTimePeriod int) []float64 {
+	outReal := make([]float64, len(inReal))
+
+	inIdx, outIdx, trailingIdx := inTimePeriod, inTimePeriod, 0
+	for inIdx < len(inReal) {
+		outReal[outIdx] = inReal[inIdx] - inReal[trailingIdx]
+		inIdx, outIdx, trailingIdx = inIdx+1, outIdx+1, trailingIdx+1
+	}
+
+	return outReal
+}
+
+// Var - Variance
+func Var(inReal []float64, inTimePeriod int) []float64 {
+	outReal := make([]float64, len(inReal))
+
+	nbInitialElementNeeded := inTimePeriod - 1
+	startIdx := nbInitialElementNeeded
+	periodTotal1 := 0.0
+	periodTotal2 := 0.0
+	trailingIdx := startIdx - nbInitialElementNeeded
+	i := trailingIdx
+	if inTimePeriod > 1 {
+		for i < startIdx {
+			tempReal := inReal[i]
+			periodTotal1 += tempReal
+			tempReal *= tempReal
+			periodTotal2 += tempReal
+			i++
+		}
+	}
+	outIdx := startIdx
+	for ok := true; ok; {
+		tempReal := inReal[i]
+		periodTotal1 += tempReal
+		tempReal *= tempReal
+		periodTotal2 += tempReal
+		meanValue1 := periodTotal1 / float64(inTimePeriod)
+		meanValue2 := periodTotal2 / float64(inTimePeriod)
+		tempReal = inReal[trailingIdx]
+		periodTotal1 -= tempReal
+		tempReal *= tempReal
+		periodTotal2 -= tempReal
+		outReal[outIdx] = meanValue2 - meanValue1*meanValue1
+		i++
+		trailingIdx++
+		outIdx++
+		ok = i < len(inReal)
+	}
+	return outReal
+}
+
+// StdDev - Standard Deviation
+func StdDev(inReal []float64, inTimePeriod int, inNbDev float64) []float64 {
+	outReal := Var(inReal, inTimePeriod)
+
+	if inNbDev != 1.0 {
+		for i := 0; i < len(inReal); i++ {
+			tempReal := outReal[i]
+			if !(tempReal < 0.00000000000001) {
+				outReal[i] = math.Sqrt(tempReal) * inNbDev
+			} else {
+				outReal[i] = 0.0
+			}
+		}
+	} else {
+		for i := 0; i < len(inReal); i++ {
+			tempReal := outReal[i]
+			if !(tempReal < 0.00000000000001) {
+				outReal[i] = math.Sqrt(tempReal)
+			} else {
+				outReal[i] = 0.0
+			}
+		}
+	}
+	return outReal
+}
+
+// Obv - On Balance Volume
+func Obv(inReal, inVolume []float64) []float64 {
+	outReal := make([]float64, len(inReal))
+	startIdx := 0
+	prevOBV := inVolume[startIdx]
+	prevReal := inReal[startIdx]
+	outIdx := 0
+	for i := startIdx; i < len(inReal); i++ {
+		tempReal := inReal[i]
+		if tempReal > prevReal {
+			prevOBV += inVolume[i]
+		} else if tempReal < prevReal {
+			prevOBV -= inVolume[i]
+		}
+		outReal[outIdx] = prevOBV
+		prevReal = tempReal
+		outIdx++
+	}
+	return outReal
+}
+
+// Beta - Beta
+func Beta(inReal0, inReal1 []float64, inTimePeriod int) []float64 {
+	outReal := make([]float64, len(inReal0))
+
+	x := 0.0
+	y := 0.0
+	sSS := 0.0
+	sXY := 0.0
+	sX := 0.0
+	sY := 0.0
+	tmpReal := 0.0
+	n := 0.0
+	nbInitialElementNeeded := inTimePeriod
+	startIdx := nbInitialElementNeeded
+	trailingIdx := startIdx - nbInitialElementNeeded
+	trailingLastPriceX := inReal0[trailingIdx]
+	lastPriceX := trailingLastPriceX
+	trailingLastPriceY := inReal1[trailingIdx]
+	lastPriceY := trailingLastPriceY
+	trailingIdx++
+	i := trailingIdx
+	for i < startIdx {
+		tmpReal := inReal0[i]
+		x := 0.0
+		if !((-0.00000000000001 < lastPriceX) && (lastPriceX < 0.00000000000001)) {
+			x = (tmpReal - lastPriceX) / lastPriceX
+		}
+		lastPriceX = tmpReal
+		tmpReal = inReal1[i]
+		i++
+		y := 0.0
+		if !((-0.00000000000001 < lastPriceY) && (lastPriceY < 0.00000000000001)) {
+			y = (tmpReal - lastPriceY) / lastPriceY
+		}
+		lastPriceY = tmpReal
+		sSS += x * x
+		sXY += x * y
+		sX += x
+		sY += y
+	}
+	outIdx := inTimePeriod
+	n = float64(inTimePeriod)
+	for ok := true; ok; {
+		tmpReal = inReal0[i]
+		if !((-0.00000000000001 < lastPriceX) && (lastPriceX < 0.00000000000001)) {
+			x = (tmpReal - lastPriceX) / lastPriceX
+		} else {
+			x = 0.0
+		}
+		lastPriceX = tmpReal
+		tmpReal = inReal1[i]
+		i++
+		if !((-0.00000000000001 < lastPriceY) && (lastPriceY < 0.00000000000001)) {
+			y = (tmpReal - lastPriceY) / lastPriceY
+		} else {
+			y = 0.0
+		}
+		lastPriceY = tmpReal
+		sSS += x * x
+		sXY += x * y
+		sX += x
+		sY += y
+		tmpReal = inReal0[trailingIdx]
+		if !(((-(0.00000000000001)) < trailingLastPriceX) && (trailingLastPriceX < (0.00000000000001))) {
+			x = (tmpReal - trailingLastPriceX) / trailingLastPriceX
+		} else {
+			x = 0.0
+		}
+		trailingLastPriceX = tmpReal
+		tmpReal = inReal1[trailingIdx]
+		trailingIdx++
+		if !(((-(0.00000000000001)) < trailingLastPriceY) && (trailingLastPriceY < (0.00000000000001))) {
+			y = (tmpReal - trailingLastPriceY) / trailingLastPriceY
+		} else {
+			y = 0.0
+		}
+		trailingLastPriceY = tmpReal
+		tmpReal = (n * sSS) - (sX * sX)
+		if !(((-(0.00000000000001)) < tmpReal) && (tmpReal < (0.00000000000001))) {
+			outReal[outIdx] = ((n * sXY) - (sX * sY)) / tmpReal
+		} else {
+			outReal[outIdx] = 0.0
+		}
+		outIdx++
+		sSS -= x * x
+		sXY -= x * y
+		sX -= x
+		sY -= y
+		ok = i < len(inReal0)
+	}
+
+	return outReal
+}
+
+// Trix - 1-day Rate-Of-Change (ROC) of a Triple Smooth EMA
+func Trix(inReal []float64, inTimePeriod int) []float64 {
+	tmpReal := Ema(inReal, inTimePeriod)
+	tmpReal = Ema(tmpReal[inTimePeriod-1:], inTimePeriod)
+	tmpReal = Ema(tmpReal[inTimePeriod-1:], inTimePeriod)
+	tmpReal = Roc(tmpReal, 1)
+
+	outReal := make([]float64, len(inReal))
+	for i, j := inTimePeriod, ((inTimePeriod-1)*3)+1; j < len(outReal); i, j = i+1, j+1 {
+		outReal[j] = tmpReal[i]
+	}
+
+	return outReal
+}
+
+// WillR - Williams' %R
+func WillR(inHigh, inLow, inClose []float64, inTimePeriod int) []float64 {
+	outReal := make([]float64, len(inClose))
+	nbInitialElementNeeded := (inTimePeriod - 1)
+	diff := 0.0
+	outIdx := inTimePeriod - 1
+	startIdx := inTimePeriod - 1
+	today := startIdx
+	trailingIdx := startIdx - nbInitialElementNeeded
+	highestIdx := -1
+	lowestIdx := -1
+	highest := 0.0
+	lowest := 0.0
+	i := 0
+	for today < len(inClose) {
+		tmp := inLow[today]
+		if lowestIdx < trailingIdx {
+			lowestIdx = trailingIdx
+			lowest = inLow[lowestIdx]
+			i = lowestIdx
+			i++
+			for i <= today {
+				tmp = inLow[i]
+				if tmp < lowest {
+					lowestIdx = i
+					lowest = tmp
+				}
+				i++
+			}
+			diff = (highest - lowest) / (-100.0)
+		} else if tmp <= lowest {
+			lowestIdx = today
+			lowest = tmp
+			diff = (highest - lowest) / (-100.0)
+		}
+		tmp = inHigh[today]
+		if highestIdx < trailingIdx {
+			highestIdx = trailingIdx
+			highest = inHigh[highestIdx]
+			i = highestIdx
+			i++
+			for i <= today {
+				tmp = inHigh[i]
+				if tmp > highest {
+					highestIdx = i
+					highest = tmp
+				}
+				i++
+			}
+			diff = (highest - lowest) / (-100.0)
+		} else if tmp >= highest {
+			highestIdx = today
+			highest = tmp
+			diff = (highest - lowest) / (-100.0)
+		}
+		if diff != 0.0 {
+			outReal[outIdx] = (highest - inClose[today]) / diff
+		} else {
+			outReal[outIdx] = 0.0
+		}
+		outIdx++
+		trailingIdx++
+		today++
+	}
+	return outReal
+}
+
+// Ad - Chaikin A/D Line
+func Ad(inHigh, inLow, inClose, inVolume []float64) []float64 {
+	outReal := make([]float64, len(inClose))
+
+	startIdx := 0
+	nbBar := len(inClose) - startIdx
+	currentBar := startIdx
+	outIdx := 0
+	ad := 0.0
+	for nbBar != 0 {
+		high := inHigh[currentBar]
+		low := inLow[currentBar]
+		tmp := high - low
+		closeVal := inClose[currentBar]
+		if tmp > 0.0 {
+			ad += (((closeVal - low) - (high - closeVal)) / tmp) * (inVolume[currentBar])
+		}
+		outReal[outIdx] = ad
+		outIdx++
+		currentBar++
+		nbBar--
+	}
+	return outReal
+}
+
+// Correl - Pearson's Correlation Coefficient (r)
+func Correl(inReal0, inReal1 []float64, inTimePeriod int) []float64 {
+	outReal := make([]float64, len(inReal0))
+
+	inTimePeriodF := float64(inTimePeriod)
+	lookbackTotal := inTimePeriod - 1
+	startIdx := lookbackTotal
+	trailingIdx := startIdx - lookbackTotal
+	sumXY, sumX, sumY, sumX2, sumY2 := 0.0, 0.0, 0.0, 0.0, 0.0
+	today := trailingIdx
+	for today = trailingIdx; today <= startIdx; today++ {
+		x := inReal0[today]
+		sumX += x
+		sumX2 += x * x
+		y := inReal1[today]
+		sumXY += x * y
+		sumY += y
+		sumY2 += y * y
+	}
+	trailingX := inReal0[trailingIdx]
+	trailingY := inReal1[trailingIdx]
+	trailingIdx++
+	tempReal := (sumX2 - ((sumX * sumX) / inTimePeriodF)) * (sumY2 - ((sumY * sumY) / inTimePeriodF))
+	if !(tempReal < 0.00000000000001) {
+		outReal[inTimePeriod-1] = (sumXY - ((sumX * sumY) / inTimePeriodF)) / math.Sqrt(tempReal)
+	} else {
+		outReal[inTimePeriod-1] = 0.0
+	}
+	outIdx := inTimePeriod
+	for today < len(inReal0) {
+		sumX -= trailingX
+		sumX2 -= trailingX * trailingX
+		sumXY -= trailingX * trailingY
+		sumY -= trailingY
+		sumY2 -= trailingY * trailingY
+		x := inReal0[today]
+		sumX += x
+		sumX2 += x * x
+		y := inReal1[today]
+		today++
+		sumXY += x * y
+		sumY += y
+		sumY2 += y * y
+		trailingX = inReal0[trailingIdx]
+		trailingY = inReal1[trailingIdx]
+		trailingIdx++
+		tempReal = (sumX2 - ((sumX * sumX) / inTimePeriodF)) * (sumY2 - ((sumY * sumY) / inTimePeriodF))
+		if !(tempReal < (0.00000000000001)) {
+			outReal[outIdx] = (sumXY - ((sumX * sumY) / inTimePeriodF)) / math.Sqrt(tempReal)
+		} else {
+			outReal[outIdx] = 0.0
+		}
+		outIdx++
+	}
+	return outReal
+}
+
+// HeikinashiCandles - from candle values extracts heikinashi candle values.
+//
+// Returns highs, opens, closes and lows of the heikinashi candles (in this order).
+//
+//    NOTE: The number of Heikin-Ashi candles will always be one less than the number of provided candles, due to the fact
+//          that a previous candle is necessary to calculate the Heikin-Ashi candle, therefore the first provided candle is not considered
+//          as "current candle" in the algorithm, but only as "previous candle".
+func HeikinashiCandles(highs, opens, closes, lows []float64) ([]float64, []float64, []float64, []float64) {
+	N := len(highs)
+
+	heikinHighs := make([]float64, N)
+	heikinOpens := make([]float64, N)
+	heikinCloses := make([]float64, N)
+	heikinLows := make([]float64, N)
+
+	for currentCandle := 1; currentCandle < N; currentCandle++ {
+		previousCandle := currentCandle - 1
+
+		heikinHighs[currentCandle] = math.Max(highs[currentCandle], math.Max(opens[currentCandle], closes[currentCandle]))
+		heikinOpens[currentCandle] = (opens[previousCandle] + closes[previousCandle]) / 2
+		heikinCloses[currentCandle] = (highs[currentCandle] + opens[currentCandle] + closes[currentCandle] + lows[currentCandle]) / 4
+		heikinLows[currentCandle] = math.Min(highs[currentCandle], math.Min(opens[currentCandle], closes[currentCandle]))
+	}
+
+	return heikinHighs, heikinOpens, heikinCloses, heikinLows
+}
+
+// Hlc3 returns the Hlc3 values
+//
+//     NOTE: Every Hlc item is defined as follows : (high + low + close) / 3
+//           It is used as AvgPrice candle.
+func Hlc3(highs, lows, closes []float64) []float64 {
+	N := len(highs)
+	result := make([]float64, N)
+	for i := range highs {
+		result[i] = (highs[i] + lows[i] + closes[i]) / 3
+	}
+
+	return result
+}
+
+// Tsf - Time Series Forecast
+func Tsf(inReal []float64, inTimePeriod int) []float64 {
+	outReal := make([]float64, len(inReal))
+
+	inTimePeriodF := float64(inTimePeriod)
+	lookbackTotal := inTimePeriod
+	startIdx := lookbackTotal
+	outIdx := startIdx - 1
+	today := startIdx - 1
+	sumX := inTimePeriodF * (inTimePeriodF - 1.0) * 0.5
+	sumXSqr := inTimePeriodF * (inTimePeriodF - 1) * (2*inTimePeriodF - 1) / 6
+	divisor := sumX*sumX - inTimePeriodF*sumXSqr
+	//initialize values of sumY and sumXY over first (inTimePeriod) input values
+	sumXY := 0.0
+	sumY := 0.0
+	i := inTimePeriod
+	for i != 0 {
+		i--
+		tempValue1 := inReal[today-i]
+		sumY += tempValue1
+		sumXY += float64(i) * tempValue1
+	}
+	for today < len(inReal) {
+		//sumX and sumXY are already available for first output value
+		if today > startIdx-1 {
+			tempValue2 := inReal[today-inTimePeriod]
+			sumXY += sumY - inTimePeriodF*tempValue2
+			sumY += inReal[today] - tempValue2
+		}
+		m := (inTimePeriodF*sumXY - sumX*sumY) / divisor
+		b := (sumY - m*sumX) / inTimePeriodF
+		outReal[outIdx] = b + m*inTimePeriodF
+		today++
+		outIdx++
+	}
+	return outReal
+}

@@ -14,15 +14,15 @@ import "errors"
 //     To transform 15 minute candles in 1 hour candles you have a grouping factor = 4
 //
 //     To transform 30 minute candles in 1 hour candles you have a grouping factor = 2
-func GroupCandles(highs []float64, opens []float64, closes []float64, lows []float64, groupingFactor int) ([]float64, []float64, []float64, []float64, error) {
+func GroupCandles(highs, opens, closes, lows []float64, groupingFactor int) ([]float64, []float64, []float64, []float64, error) {
 	N := len(highs)
 	if groupingFactor == 0 {
-		return nil, nil, nil, nil, errors.New("Grouping factor must be > 0")
+		return nil, nil, nil, nil, errors.New("grouping factor must be > 0")
 	} else if groupingFactor == 1 {
 		return highs, opens, closes, lows, nil // no need to group in this case, return the parameters.
 	}
 	if N%groupingFactor > 0 {
-		return nil, nil, nil, nil, errors.New("Cannot group properly, need a groupingFactor which is a factor of the number of candles")
+		return nil, nil, nil, nil, errors.New("cannot group properly, need a groupingFactor which is a factor of the number of candles")
 	}
 
 	groupedN := N / groupingFactor

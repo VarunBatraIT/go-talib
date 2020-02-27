@@ -42,7 +42,6 @@ func Rsi(inReal []float64, inTimePeriod int) []float64 {
 		}
 		outIdx++
 	} else {
-
 		for today < 0 {
 			tempValue1 = inReal[today]
 			tempValue2 = tempValue1 - prevValue
@@ -87,7 +86,7 @@ func Rsi(inReal []float64, inTimePeriod int) []float64 {
 }
 
 // StochRsi - Stochastic Relative Strength Index
-func StochRsi(inReal []float64, inTimePeriod int, inFastKPeriod int, inFastDPeriod int, inFastDMAType MaType) ([]float64, []float64) {
+func StochRsi(inReal []float64, inTimePeriod, inFastKPeriod, inFastDPeriod int, inFastDMAType MaType) ([]float64, []float64) {
 	outFastK := make([]float64, len(inReal))
 	outFastD := make([]float64, len(inReal))
 

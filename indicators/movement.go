@@ -3,7 +3,7 @@ package indicators
 import "math"
 
 // Adx - Average Directional Movement Index
-func Adx(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int) []float64 {
+func Adx(inHigh, inLow, inClose []float64, inTimePeriod int) []float64 {
 	outReal := make([]float64, len(inClose))
 
 	inTimePeriodF := float64(inTimePeriod)
@@ -128,7 +128,7 @@ func Adx(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int)
 }
 
 // AdxR - Average Directional Movement Index Rating
-func AdxR(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int) []float64 {
+func AdxR(inHigh, inLow, inClose []float64, inTimePeriod int) []float64 {
 	outReal := make([]float64, len(inClose))
 	startIdx := (2 * inTimePeriod) - 1
 	tmpadx := Adx(inHigh, inLow, inClose, inTimePeriod)
@@ -141,7 +141,7 @@ func AdxR(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int
 }
 
 // Dx - Directional Movement Index
-func Dx(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int) []float64 {
+func Dx(inHigh, inLow, inClose []float64, inTimePeriod int) []float64 {
 	outReal := make([]float64, len(inClose))
 
 	lookbackTotal := 2
@@ -245,7 +245,7 @@ func Dx(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int) 
 }
 
 // MinusDM - Minus Directional Movement
-func MinusDM(inHigh []float64, inLow []float64, inTimePeriod int) []float64 {
+func MinusDM(inHigh, inLow []float64, inTimePeriod int) []float64 {
 	outReal := make([]float64, len(inHigh))
 
 	lookbackTotal := 1
@@ -334,7 +334,7 @@ func MinusDM(inHigh []float64, inLow []float64, inTimePeriod int) []float64 {
 }
 
 // PlusDM - Plus Directional Movement
-func PlusDM(inHigh []float64, inLow []float64, inTimePeriod int) []float64 {
+func PlusDM(inHigh, inLow []float64, inTimePeriod int) []float64 {
 	outReal := make([]float64, len(inHigh))
 
 	lookbackTotal := 1

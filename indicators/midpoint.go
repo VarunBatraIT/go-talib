@@ -29,7 +29,7 @@ func MidPoint(inReal []float64, inTimePeriod int) []float64 {
 }
 
 // MidPrice - Midpoint Price over period
-func MidPrice(inHigh []float64, inLow []float64, inTimePeriod int) []float64 {
+func MidPrice(inHigh, inLow []float64, inTimePeriod int) []float64 {
 	outReal := make([]float64, len(inHigh))
 
 	nbInitialElementNeeded := inTimePeriod - 1

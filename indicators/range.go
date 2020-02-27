@@ -3,7 +3,7 @@ package indicators
 import "math"
 
 // Atr - Average True Range
-func Atr(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int) []float64 {
+func Atr(inHigh, inLow, inClose []float64, inTimePeriod int) []float64 {
 	outReal := make([]float64, len(inClose))
 
 	inTimePeriodF := float64(inTimePeriod)
@@ -36,7 +36,7 @@ func Atr(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int)
 }
 
 // Natr - Normalized Average True Range
-func Natr(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int) []float64 {
+func Natr(inHigh, inLow, inClose []float64, inTimePeriod int) []float64 {
 	outReal := make([]float64, len(inClose))
 
 	if inTimePeriod < 1 {
@@ -79,7 +79,7 @@ func Natr(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int
 }
 
 // TRange - True Range
-func TRange(inHigh []float64, inLow []float64, inClose []float64) []float64 {
+func TRange(inHigh, inLow, inClose []float64) []float64 {
 	outReal := make([]float64, len(inClose))
 
 	startIdx := 1

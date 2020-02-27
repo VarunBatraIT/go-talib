@@ -4,7 +4,7 @@ import "math"
 
 // Sar - Parabolic SAR
 // real = Sar(high, low, acceleration=0, maximum=0)
-func Sar(inHigh []float64, inLow []float64, inAcceleration float64, inMaximum float64) []float64 {
+func Sar(inHigh, inLow []float64, inAcceleration, inMaximum float64) []float64 {
 	outReal := make([]float64, len(inHigh))
 
 	af := inAcceleration
@@ -125,7 +125,7 @@ func Sar(inHigh []float64, inLow []float64, inAcceleration float64, inMaximum fl
 
 // SarExt - Parabolic SAR - Extended
 // real = SAREXT(high, low, startvalue=0, offsetonreverse=0, accelerationinitlong=0, accelerationlong=0, accelerationmaxlong=0, accelerationinitshort=0, accelerationshort=0, accelerationmaxshort=0)
-func SarExt(inHigh []float64, inLow []float64,
+func SarExt(inHigh, inLow []float64,
 	inStartValue float64,
 	inOffsetOnReverse float64,
 	inAccelerationInitLong float64,
