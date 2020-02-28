@@ -54,7 +54,7 @@ func Sar(inHigh, inLow []float64, inAcceleration, inMaximum float64) []float64 {
 				outIdx++
 				af = inAcceleration
 				ep = newLow
-				sar = sar + af*(ep-sar)
+				sar += af * (ep - sar)
 				if sar < prevHigh {
 					sar = prevHigh
 				}
@@ -71,7 +71,7 @@ func Sar(inHigh, inLow []float64, inAcceleration, inMaximum float64) []float64 {
 						af = inMaximum
 					}
 				}
-				sar = sar + af*(ep-sar)
+				sar += af * (ep - sar)
 				if sar > prevLow {
 					sar = prevLow
 				}
@@ -93,7 +93,7 @@ func Sar(inHigh, inLow []float64, inAcceleration, inMaximum float64) []float64 {
 				outIdx++
 				af = inAcceleration
 				ep = newHigh
-				sar = sar + af*(ep-sar)
+				sar += af * (ep - sar)
 				if sar > prevLow {
 					sar = prevLow
 				}
@@ -110,7 +110,7 @@ func Sar(inHigh, inLow []float64, inAcceleration, inMaximum float64) []float64 {
 						af = inMaximum
 					}
 				}
-				sar = sar + af*(ep-sar)
+				sar += af * (ep - sar)
 				if sar < prevHigh {
 					sar = prevHigh
 				}
@@ -126,13 +126,13 @@ func Sar(inHigh, inLow []float64, inAcceleration, inMaximum float64) []float64 {
 // SarExt - Parabolic SAR - Extended
 // real = SAREXT(high, low, startvalue=0, offsetonreverse=0, accelerationinitlong=0, accelerationlong=0, accelerationmaxlong=0, accelerationinitshort=0, accelerationshort=0, accelerationmaxshort=0)
 func SarExt(inHigh, inLow []float64,
-	inStartValue float64,
-	inOffsetOnReverse float64,
-	inAccelerationInitLong float64,
-	inAccelerationLong float64,
-	inAccelerationMaxLong float64,
-	inAccelerationInitShort float64,
-	inAccelerationShort float64,
+	inStartValue,
+	inOffsetOnReverse,
+	inAccelerationInitLong,
+	inAccelerationLong,
+	inAccelerationMaxLong,
+	inAccelerationInitShort,
+	inAccelerationShort,
 	inAccelerationMaxShort float64) []float64 {
 	outReal := make([]float64, len(inHigh))
 
@@ -214,7 +214,7 @@ func SarExt(inHigh, inLow []float64,
 				outIdx++
 				afShort = inAccelerationInitShort
 				ep = newLow
-				sar = sar + afShort*(ep-sar)
+				sar += afShort * (ep - sar)
 				if sar < prevHigh {
 					sar = prevHigh
 				}
@@ -231,7 +231,7 @@ func SarExt(inHigh, inLow []float64,
 						afLong = inAccelerationMaxLong
 					}
 				}
-				sar = sar + afLong*(ep-sar)
+				sar += afLong * (ep - sar)
 				if sar > prevLow {
 					sar = prevLow
 				}
@@ -256,7 +256,7 @@ func SarExt(inHigh, inLow []float64,
 				outIdx++
 				afLong = inAccelerationInitLong
 				ep = newHigh
-				sar = sar + afLong*(ep-sar)
+				sar += afLong * (ep - sar)
 				if sar > prevLow {
 					sar = prevLow
 				}
@@ -273,7 +273,7 @@ func SarExt(inHigh, inLow []float64,
 						afShort = inAccelerationMaxShort
 					}
 				}
-				sar = sar + afShort*(ep-sar)
+				sar += afShort * (ep - sar)
 				if sar < prevHigh {
 					sar = prevHigh
 				}

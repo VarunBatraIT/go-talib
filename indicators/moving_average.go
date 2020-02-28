@@ -88,7 +88,7 @@ func Ema(inReal []float64, inTimePeriod int) []float64 {
 }
 
 // Mama - MESA Adaptive Moving Average (lookback=32)
-func Mama(inReal []float64, inFastLimit float64, inSlowLimit float64) ([]float64, []float64) {
+func Mama(inReal []float64, inFastLimit, inSlowLimit float64) ([]float64, []float64) {
 	outMAMA := make([]float64, len(inReal))
 	outFAMA := make([]float64, len(inReal))
 
@@ -495,19 +495,19 @@ func Macd(inReal []float64, inFastPeriod, inSlowPeriod, inSignalPeriod int) ([]f
 
 	lookbackSignal := inSignalPeriod - 1
 	lookbackTotal := lookbackSignal
-	lookbackTotal += (inSlowPeriod - 1)
+	lookbackTotal += inSlowPeriod - 1
 
 	fastEMABuffer := ema(inReal, inFastPeriod, k2)
 	slowEMABuffer := ema(inReal, inSlowPeriod, k1)
 	for i := 0; i < len(fastEMABuffer); i++ {
-		fastEMABuffer[i] = fastEMABuffer[i] - slowEMABuffer[i]
+		fastEMABuffer[i] -= slowEMABuffer[i]
 	}
 
 	outMACD := make([]float64, len(inReal))
 	for i := lookbackTotal - 1; i < len(fastEMABuffer); i++ {
 		outMACD[i] = fastEMABuffer[i]
 	}
-	outMACDSignal := ema(outMACD, inSignalPeriod, (2.0 / float64(inSignalPeriod+1)))
+	outMACDSignal := ema(outMACD, inSignalPeriod, 2.0/float64(inSignalPeriod+1))
 
 	outMACDHist := make([]float64, len(inReal))
 	for i := lookbackTotal; i < len(outMACDHist); i++ {

@@ -62,7 +62,7 @@ func Rocr(inReal []float64, inTimePeriod int) []float64 {
 	for inIdx < len(inReal) {
 		tempReal := inReal[trailingIdx]
 		if tempReal != 0.0 {
-			outReal[outIdx] = (inReal[inIdx] / tempReal)
+			outReal[outIdx] = inReal[inIdx] / tempReal
 		} else {
 			outReal[outIdx] = 0.0
 		}

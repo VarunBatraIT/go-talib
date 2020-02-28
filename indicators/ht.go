@@ -49,7 +49,7 @@ func HtTrendline(inReal []float64) []float64 {
 		periodWMASum += tempReal * 4.0
 		trailingWMAValue = inReal[trailingWMAIdx]
 		trailingWMAIdx++
-		//smoothedValue := periodWMASum * 0.1
+		// smoothedValue := periodWMASum * 0.1
 		periodWMASum -= periodWMASub
 		i--
 		ok = i != 0
@@ -218,7 +218,7 @@ func HtTrendline(inReal []float64) []float64 {
 			idx--
 		}
 		if DCPeriodInt > 0 {
-			tempReal = tempReal / (DCPeriodInt * 1.0)
+			tempReal /= DCPeriodInt * 1.0
 		}
 		tempReal2 = (4.0*tempReal + 3.0*iTrend1 + 2.0*iTrend2 + iTrend3) / 10.0
 		iTrend3 = iTrend2
@@ -773,7 +773,7 @@ func HtTrendMode(inReal []float64) []float64 {
 		periodWMASum += tempReal * 4.0
 		trailingWMAValue = inReal[trailingWMAIdx]
 		trailingWMAIdx++
-		//smoothedValue := periodWMASum * 0.1
+		// smoothedValue := periodWMASum * 0.1
 		periodWMASum -= periodWMASub
 		i--
 		ok = i != 0
@@ -986,7 +986,7 @@ func HtTrendMode(inReal []float64) []float64 {
 			idx--
 		}
 		if DCPeriodInt > 0 {
-			tempReal = tempReal / (DCPeriodInt * 1.0)
+			tempReal /= DCPeriodInt * 1.0
 		}
 		trendline := (4.0*tempReal + 3.0*iTrend1 + 2.0*iTrend2 + iTrend3) / 10.0
 		iTrend3 = iTrend2

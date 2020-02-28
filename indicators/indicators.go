@@ -142,7 +142,7 @@ func Tanh(inReal []float64) []float64 {
 /* Math Operator Functions */
 
 // Add - Vector arithmetic addition
-func Add(inReal0 []float64, inReal1 []float64) []float64 {
+func Add(inReal0, inReal1 []float64) []float64 {
 	outReal := make([]float64, len(inReal0))
 	for i := 0; i < len(inReal0); i++ {
 		outReal[i] = inReal0[i] + inReal1[i]
@@ -151,7 +151,7 @@ func Add(inReal0 []float64, inReal1 []float64) []float64 {
 }
 
 // Div - Vector arithmetic division
-func Div(inReal0 []float64, inReal1 []float64) []float64 {
+func Div(inReal0, inReal1 []float64) []float64 {
 	outReal := make([]float64, len(inReal0))
 	for i := 0; i < len(inReal0); i++ {
 		outReal[i] = inReal0[i] / inReal1[i]
@@ -225,7 +225,7 @@ func MaxIndex(inReal []float64, inTimePeriod int) []float64 {
 			highest = inReal[highestIdx]
 			i := highestIdx + 1
 			for i <= today {
-				tmp := inReal[i]
+				tmp = inReal[i]
 				if tmp > highest {
 					highestIdx = i
 					highest = tmp
@@ -448,7 +448,7 @@ func MinMaxIndex(inReal []float64, inTimePeriod int) ([]float64, []float64) {
 }
 
 // Mult - Vector arithmetic multiply
-func Mult(inReal0 []float64, inReal1 []float64) []float64 {
+func Mult(inReal0, inReal1 []float64) []float64 {
 	outReal := make([]float64, len(inReal0))
 	for i := 0; i < len(inReal0); i++ {
 		outReal[i] = inReal0[i] * inReal1[i]
@@ -457,7 +457,7 @@ func Mult(inReal0 []float64, inReal1 []float64) []float64 {
 }
 
 // Sub - Vector arithmetic subtraction
-func Sub(inReal0 []float64, inReal1 []float64) []float64 {
+func Sub(inReal0, inReal1 []float64) []float64 {
 	outReal := make([]float64, len(inReal0))
 	for i := 0; i < len(inReal0); i++ {
 		outReal[i] = inReal0[i] - inReal1[i]
@@ -632,15 +632,15 @@ func Beta(inReal0, inReal1 []float64, inTimePeriod int) []float64 {
 	trailingIdx++
 	i := trailingIdx
 	for i < startIdx {
-		tmpReal := inReal0[i]
-		x := 0.0
+		tmpReal = inReal0[i]
+		x = 0.0
 		if !((-0.00000000000001 < lastPriceX) && (lastPriceX < 0.00000000000001)) {
 			x = (tmpReal - lastPriceX) / lastPriceX
 		}
 		lastPriceX = tmpReal
 		tmpReal = inReal1[i]
 		i++
-		y := 0.0
+		y = 0.0
 		if !((-0.00000000000001 < lastPriceY) && (lastPriceY < 0.00000000000001)) {
 			y = (tmpReal - lastPriceY) / lastPriceY
 		}

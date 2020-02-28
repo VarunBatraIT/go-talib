@@ -140,9 +140,9 @@ func AdOsc(inHigh, inLow, inClose, inVolume []float64, inFastPeriod, inSlowPerio
 	high := inHigh[today]
 	low := inLow[today]
 	tmp := high - low
-	close := inClose[today]
+	closeToday := inClose[today]
 	if tmp > 0.0 {
-		ad += (((close - low) - (high - close)) / tmp) * (inVolume[today])
+		ad += (((closeToday - low) - (high - closeToday)) / tmp) * (inVolume[today])
 	}
 	today++
 	fastEMA := ad
@@ -152,9 +152,9 @@ func AdOsc(inHigh, inLow, inClose, inVolume []float64, inFastPeriod, inSlowPerio
 		high = inHigh[today]
 		low = inLow[today]
 		tmp = high - low
-		close = inClose[today]
+		closeToday = inClose[today]
 		if tmp > 0.0 {
-			ad += (((close - low) - (high - close)) / tmp) * (inVolume[today])
+			ad += (((closeToday - low) - (high - closeToday)) / tmp) * (inVolume[today])
 		}
 		today++
 
@@ -166,9 +166,9 @@ func AdOsc(inHigh, inLow, inClose, inVolume []float64, inFastPeriod, inSlowPerio
 		high = inHigh[today]
 		low = inLow[today]
 		tmp = high - low
-		close = inClose[today]
+		closeToday = inClose[today]
 		if tmp > 0.0 {
-			ad += (((close - low) - (high - close)) / tmp) * (inVolume[today])
+			ad += (((closeToday - low) - (high - closeToday)) / tmp) * (inVolume[today])
 		}
 		today++
 		fastEMA = (fastk * ad) + (oneMinusfastk * fastEMA)
@@ -181,7 +181,7 @@ func AdOsc(inHigh, inLow, inClose, inVolume []float64, inFastPeriod, inSlowPerio
 }
 
 // UltOsc - Ultimate Oscillator
-func UltOsc(inHigh, inLow, inClose []float64, inTimePeriod1 int, inTimePeriod2 int, inTimePeriod3 int) []float64 {
+func UltOsc(inHigh, inLow, inClose []float64, inTimePeriod1, inTimePeriod2, inTimePeriod3 int) []float64 {
 	outReal := make([]float64, len(inClose))
 
 	usedFlag := make([]int, 3)

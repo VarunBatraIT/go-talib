@@ -90,7 +90,7 @@ func StochF(inHigh, inLow, inClose []float64, inFastKPeriod, inFastDPeriod int, 
 	today := trailingIdx + lookbackK
 	lowestIdx, highestIdx := -1, -1
 	diff, highest, lowest := 0.0, 0.0, 0.0
-	tempBuffer := make([]float64, (len(inClose) - today + 1))
+	tempBuffer := make([]float64, len(inClose)-today+1)
 
 	for today < len(inClose) {
 		tmp := inLow[today]

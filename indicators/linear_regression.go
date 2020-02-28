@@ -89,7 +89,6 @@ func LinearRegIntercept(inReal []float64, inTimePeriod int) []float64 {
 	sumX := inTimePeriodF * (inTimePeriodF - 1) * 0.5
 	sumXSqr := inTimePeriodF * (inTimePeriodF - 1) * (2*inTimePeriodF - 1) / 6
 	divisor := sumX*sumX - inTimePeriodF*sumXSqr
-	//initialize values of sumY and sumXY over first (inTimePeriod) input values
 	sumXY := 0.0
 	sumY := 0.0
 	i := inTimePeriod
@@ -100,7 +99,6 @@ func LinearRegIntercept(inReal []float64, inTimePeriod int) []float64 {
 		sumXY += float64(i) * tempValue1
 	}
 	for today < len(inReal) {
-		//sumX and sumXY are already available for first output value
 		if today > startIdx-1 {
 			tempValue2 := inReal[today-inTimePeriod]
 			sumXY += sumY - inTimePeriodF*tempValue2
@@ -126,7 +124,6 @@ func LinearRegSlope(inReal []float64, inTimePeriod int) []float64 {
 	sumX := inTimePeriodF * (inTimePeriodF - 1) * 0.5
 	sumXSqr := inTimePeriodF * (inTimePeriodF - 1) * (2*inTimePeriodF - 1) / 6
 	divisor := sumX*sumX - inTimePeriodF*sumXSqr
-	//initialize values of sumY and sumXY over first (inTimePeriod) input values
 	sumXY := 0.0
 	sumY := 0.0
 	i := inTimePeriod
@@ -137,7 +134,6 @@ func LinearRegSlope(inReal []float64, inTimePeriod int) []float64 {
 		sumXY += float64(i) * tempValue1
 	}
 	for today < len(inReal) {
-		//sumX and sumXY are already available for first output value
 		if today > startIdx-1 {
 			tempValue2 := inReal[today-inTimePeriod]
 			sumXY += sumY - inTimePeriodF*tempValue2

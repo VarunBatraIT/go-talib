@@ -29,7 +29,7 @@ linters:
     - nakedret
     - scopelint
     - gocritic
-    - gocyclo
+  #- gocyclo
     - errcheck
     - dupl
     - interfacer
@@ -38,7 +38,7 @@ linters:
     - deadcode
     - whitespace
     - dogsled
-    - funlen
+   # - funlen
     - godox
     - bodyclose
     - unused
