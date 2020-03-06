@@ -77,9 +77,9 @@ func Stoch(inHigh, inLow, inClose []float64, inFastKPeriod, inSlowKPeriod int, i
 }
 
 // StochF - Stochastic Fast
-func StochF(inHigh, inLow, inClose []float64, inFastKPeriod, inFastDPeriod int, inFastDMAType MaType) ([]float64, []float64) {
-	outFastK := make([]float64, len(inClose))
-	outFastD := make([]float64, len(inClose))
+func StochF(inHigh, inLow, inClose []float64, inFastKPeriod, inFastDPeriod int, inFastDMAType MaType) (outFastK, outFastD []float64) {
+	outFastK = make([]float64, len(inClose))
+	outFastD = make([]float64, len(inClose))
 
 	lookbackK := inFastKPeriod - 1
 	lookbackFastD := inFastDPeriod - 1

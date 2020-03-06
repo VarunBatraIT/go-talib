@@ -49,7 +49,6 @@ func HtTrendline(inReal []float64) []float64 {
 		periodWMASum += tempReal * 4.0
 		trailingWMAValue = inReal[trailingWMAIdx]
 		trailingWMAIdx++
-		// smoothedValue := periodWMASum * 0.1
 		periodWMASum -= periodWMASub
 		i--
 		ok = i != 0
@@ -239,9 +238,9 @@ func HtTrendline(inReal []float64) []float64 {
 }
 
 // HtPhasor - Hibert Transform - Phasor Components (lookback=32)
-func HtPhasor(inReal []float64) ([]float64, []float64) {
-	outInPhase := make([]float64, len(inReal))
-	outQuadrature := make([]float64, len(inReal))
+func HtPhasor(inReal []float64) (outInPhase, outQuadrature []float64) {
+	outInPhase = make([]float64, len(inReal))
+	outQuadrature = make([]float64, len(inReal))
 
 	a := 0.0962
 	b := 0.5769

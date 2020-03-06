@@ -31,7 +31,7 @@ linters:
     - gocritic
   #- gocyclo
     - errcheck
-    - dupl
+  #   - dupl
     - interfacer
     - prealloc
     - varcheck

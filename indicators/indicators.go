@@ -1,6 +1,8 @@
 package indicators
 
-import "math"
+import (
+	"math"
+)
 
 /* Math Transform Functions */
 
