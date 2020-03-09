@@ -1,9 +1,9 @@
 package indicators
 
 // Stoch - Stochastic
-func Stoch(inHigh, inLow, inClose []float64, inFastKPeriod, inSlowKPeriod int, inSlowKMAType MaType, inSlowDPeriod int, inSlowDMAType MaType) ([]float64, []float64) {
-	outSlowK := make([]float64, len(inClose))
-	outSlowD := make([]float64, len(inClose))
+func Stoch(inHigh, inLow, inClose []float64, inFastKPeriod, inSlowKPeriod int, inSlowKMAType MaType, inSlowDPeriod int, inSlowDMAType MaType) (outSlowK, outSlowD []float64) {
+	outSlowK = make([]float64, len(inClose))
+	outSlowD = make([]float64, len(inClose))
 
 	lookbackK := inFastKPeriod - 1
 	lookbackKSlow := inSlowKPeriod - 1
@@ -67,7 +67,6 @@ func Stoch(inHigh, inLow, inClose []float64, inFastKPeriod, inSlowKPeriod int, i
 
 	tempBuffer1 := Ma(tempBuffer, inSlowKPeriod, inSlowKMAType)
 	tempBuffer2 := Ma(tempBuffer1, inSlowDPeriod, inSlowDMAType)
-	//for i, j := lookbackK, lookbackTotal; j < len(inClose); i, j = i+1, j+1 {
 	for i, j := lookbackDSlow+lookbackKSlow, lookbackTotal; j < len(inClose); i, j = i+1, j+1 {
 		outSlowK[j] = tempBuffer1[i]
 		outSlowD[j] = tempBuffer2[i]

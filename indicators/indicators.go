@@ -332,9 +332,9 @@ func MinIndex(inReal []float64, inTimePeriod int) []float64 {
 }
 
 // MinMax - Lowest and highest values over a specified period
-func MinMax(inReal []float64, inTimePeriod int) ([]float64, []float64) {
-	outMin := make([]float64, len(inReal))
-	outMax := make([]float64, len(inReal))
+func MinMax(inReal []float64, inTimePeriod int) (outMin, outMax []float64) {
+	outMin = make([]float64, len(inReal))
+	outMax = make([]float64, len(inReal))
 
 	nbInitialElementNeeded := (inTimePeriod - 1)
 	startIdx := nbInitialElementNeeded
@@ -391,9 +391,9 @@ func MinMax(inReal []float64, inTimePeriod int) ([]float64, []float64) {
 }
 
 // MinMaxIndex - Indexes of lowest and highest values over a specified period
-func MinMaxIndex(inReal []float64, inTimePeriod int) ([]float64, []float64) {
-	outMinIdx := make([]float64, len(inReal))
-	outMaxIdx := make([]float64, len(inReal))
+func MinMaxIndex(inReal []float64, inTimePeriod int) (outMinIdx, outMaxIdx []float64) {
+	outMinIdx = make([]float64, len(inReal))
+	outMaxIdx = make([]float64, len(inReal))
 
 	nbInitialElementNeeded := (inTimePeriod - 1)
 	startIdx := nbInitialElementNeeded
@@ -877,13 +877,13 @@ func Correl(inReal0, inReal1 []float64, inTimePeriod int) []float64 {
 //    NOTE: The number of Heikin-Ashi candles will always be one less than the number of provided candles, due to the fact
 //          that a previous candle is necessary to calculate the Heikin-Ashi candle, therefore the first provided candle is not considered
 //          as "current candle" in the algorithm, but only as "previous candle".
-func HeikinashiCandles(highs, opens, closes, lows []float64) ([]float64, []float64, []float64, []float64) {
+func HeikinashiCandles(highs, opens, closes, lows []float64) (heikinHighs, heikinOpens, heikinCloses, heikinLows []float64) {
 	N := len(highs)
 
-	heikinHighs := make([]float64, N)
-	heikinOpens := make([]float64, N)
-	heikinCloses := make([]float64, N)
-	heikinLows := make([]float64, N)
+	heikinHighs = make([]float64, N)
+	heikinOpens = make([]float64, N)
+	heikinCloses = make([]float64, N)
+	heikinLows = make([]float64, N)
 
 	for currentCandle := 1; currentCandle < N; currentCandle++ {
 		previousCandle := currentCandle - 1
@@ -923,7 +923,6 @@ func Tsf(inReal []float64, inTimePeriod int) []float64 {
 	sumX := inTimePeriodF * (inTimePeriodF - 1.0) * 0.5
 	sumXSqr := inTimePeriodF * (inTimePeriodF - 1) * (2*inTimePeriodF - 1) / 6
 	divisor := sumX*sumX - inTimePeriodF*sumXSqr
-	//initialize values of sumY and sumXY over first (inTimePeriod) input values
 	sumXY := 0.0
 	sumY := 0.0
 	i := inTimePeriod
@@ -934,7 +933,6 @@ func Tsf(inReal []float64, inTimePeriod int) []float64 {
 		sumXY += float64(i) * tempValue1
 	}
 	for today < len(inReal) {
-		//sumX and sumXY are already available for first output value
 		if today > startIdx-1 {
 			tempValue2 := inReal[today-inTimePeriod]
 			sumXY += sumY - inTimePeriodF*tempValue2

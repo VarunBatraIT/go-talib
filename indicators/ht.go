@@ -280,7 +280,6 @@ func HtPhasor(inReal []float64) (outInPhase, outQuadrature []float64) {
 		periodWMASum += tempReal * 4.0
 		trailingWMAValue = inReal[trailingWMAIdx]
 		trailingWMAIdx++
-		smoothedValue = periodWMASum * 0.1
 		periodWMASum -= periodWMASub
 		i--
 		ok = i != 0
@@ -455,9 +454,9 @@ func HtPhasor(inReal []float64) (outInPhase, outQuadrature []float64) {
 }
 
 // HtSine - Hilbert Transform - SineWave (lookback=63)
-func HtSine(inReal []float64) ([]float64, []float64) {
-	outSine := make([]float64, len(inReal))
-	outLeadSine := make([]float64, len(inReal))
+func HtSine(inReal []float64) (outSine, outLeadSine []float64) {
+	outSine = make([]float64, len(inReal))
+	outLeadSine = make([]float64, len(inReal))
 
 	a := 0.0962
 	b := 0.5769
@@ -503,7 +502,6 @@ func HtSine(inReal []float64) ([]float64, []float64) {
 		periodWMASum += tempReal * 4.0
 		trailingWMAValue = inReal[trailingWMAIdx]
 		trailingWMAIdx++
-		smoothedValue = periodWMASum * 0.1
 		periodWMASum -= periodWMASub
 		i--
 		ok = i != 0
@@ -772,7 +770,6 @@ func HtTrendMode(inReal []float64) []float64 {
 		periodWMASum += tempReal * 4.0
 		trailingWMAValue = inReal[trailingWMAIdx]
 		trailingWMAIdx++
-		// smoothedValue := periodWMASum * 0.1
 		periodWMASum -= periodWMASub
 		i--
 		ok = i != 0
@@ -1064,7 +1061,6 @@ func HtDcPeriod(inReal []float64) []float64 {
 		periodWMASum += tempReal * 4.0
 		trailingWMAValue = inReal[trailingWMAIdx]
 		trailingWMAIdx++
-		smoothedValue = periodWMASum * 0.1
 		periodWMASum -= periodWMASub
 		i--
 		ok = i != 0
@@ -1280,7 +1276,6 @@ func HtDcPhase(inReal []float64) []float64 {
 		periodWMASum += tempReal * 4.0
 		trailingWMAValue = inReal[trailingWMAIdx]
 		trailingWMAIdx++
-		smoothedValue = periodWMASum * 0.1
 		periodWMASum -= periodWMASub
 		i--
 		ok = i != 0

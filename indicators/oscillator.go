@@ -300,12 +300,6 @@ func UltOsc(inHigh, inLow, inClose []float64, inTimePeriod1, inTimePeriod2, inTi
 		b3Total += trueRange
 	}
 
-	//today := startIdx
-	//outIdx := startIdx
-	//trailingIdx1 := today - inTimePeriod1 + 1
-	//trailingIdx2 := today - inTimePeriod2 + 1
-	//trailingIdx3 := today - inTimePeriod3 + 1
-
 	today := startIdx
 	outIdx := startIdx
 	trailingIdx1 := today - inTimePeriod1 + 1
@@ -352,7 +346,6 @@ func UltOsc(inHigh, inLow, inClose []float64, inTimePeriod1, inTimePeriod2, inTi
 		tempLT = inLow[trailingIdx1]
 		tempHT = inHigh[trailingIdx1]
 		tempCY = inClose[trailingIdx1-1]
-		trueLow = 0.0
 		if tempLT < tempCY {
 			trueLow = tempLT
 		} else {
@@ -374,7 +367,6 @@ func UltOsc(inHigh, inLow, inClose []float64, inTimePeriod1, inTimePeriod2, inTi
 		tempLT = inLow[trailingIdx2]
 		tempHT = inHigh[trailingIdx2]
 		tempCY = inClose[trailingIdx2-1]
-		trueLow = 0.0
 		if tempLT < tempCY {
 			trueLow = tempLT
 		} else {
@@ -396,7 +388,6 @@ func UltOsc(inHigh, inLow, inClose []float64, inTimePeriod1, inTimePeriod2, inTi
 		tempLT = inLow[trailingIdx3]
 		tempHT = inHigh[trailingIdx3]
 		tempCY = inClose[trailingIdx3-1]
-		trueLow = 0.0
 		if tempLT < tempCY {
 			trueLow = tempLT
 		} else {

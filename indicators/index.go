@@ -42,12 +42,11 @@ func Cci(inHigh, inLow, inClose []float64, inTimePeriod int) []float64 {
 		} else {
 			outReal[outIdx] = 0.0
 		}
-		{
-			circBufferIdx++
-			if circBufferIdx > maxIdxCircBuffer {
-				circBufferIdx = 0
-			}
+		circBufferIdx++
+		if circBufferIdx > maxIdxCircBuffer {
+			circBufferIdx = 0
 		}
+
 		outIdx++
 		i++
 	}
@@ -59,9 +58,8 @@ func Cci(inHigh, inLow, inClose []float64, inTimePeriod int) []float64 {
 func Mfi(inHigh, inLow, inClose, inVolume []float64, inTimePeriod int) []float64 {
 	outReal := make([]float64, len(inClose))
 	mflowIdx := 0
-	maxIdxMflow := (50 - 1)
 	mflow := make([]moneyFlow, inTimePeriod)
-	maxIdxMflow = inTimePeriod - 1
+	maxIdxMflow := inTimePeriod - 1
 	lookbackTotal := inTimePeriod
 	startIdx := lookbackTotal
 	outIdx := startIdx
@@ -76,6 +74,7 @@ func Mfi(inHigh, inLow, inClose, inVolume []float64, inTimePeriod int) []float64
 		prevValue = tempValue1
 		tempValue1 *= inVolume[today]
 		today++
+		//nolint ifElseChain switch case makes execution flow harder to follow with negative numbers
 		if tempValue2 < 0 {
 			(mflow[mflowIdx]).negative = tempValue1
 			negSumMF += tempValue1
@@ -109,6 +108,7 @@ func Mfi(inHigh, inLow, inClose, inVolume []float64, inTimePeriod int) []float64
 			prevValue = tempValue1
 			tempValue1 *= inVolume[today]
 			today++
+			//nolint ifElseChain switch case makes execution flow harder to follow with negative numbers
 			if tempValue2 < 0 {
 				(mflow[mflowIdx]).negative = tempValue1
 				negSumMF += tempValue1
@@ -135,6 +135,7 @@ func Mfi(inHigh, inLow, inClose, inVolume []float64, inTimePeriod int) []float64
 		prevValue = tempValue1
 		tempValue1 *= inVolume[today]
 		today++
+		//nolint ifElseChain switch case makes execution flow harder to follow with negative numbers
 		if tempValue2 < 0 {
 			(mflow[mflowIdx]).negative = tempValue1
 			negSumMF += tempValue1

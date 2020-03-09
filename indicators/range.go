@@ -16,15 +16,13 @@ func Atr(inHigh, inLow, inClose []float64, inTimePeriod int) []float64 {
 		return TRange(inHigh, inLow, inClose)
 	}
 
-	outIdx := inTimePeriod
 	today := inTimePeriod + 1
-
 	tr := TRange(inHigh, inLow, inClose)
 	prevATRTemp := Sma(tr, inTimePeriod)
 	prevATR := prevATRTemp[inTimePeriod]
 	outReal[inTimePeriod] = prevATR
 
-	for outIdx = inTimePeriod + 1; outIdx < len(inClose); outIdx++ {
+	for outIdx := inTimePeriod + 1; outIdx < len(inClose); outIdx++ {
 		prevATR *= inTimePeriodF - 1.0
 		prevATR += tr[today]
 		prevATR /= inTimePeriodF

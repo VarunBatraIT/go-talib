@@ -29,9 +29,9 @@ linters:
     - nakedret
     - scopelint
     - gocritic
-  #- gocyclo
+  # - gocyclo
     - errcheck
-  #   - dupl
+  #  - dupl
     - interfacer
     - prealloc
     - varcheck

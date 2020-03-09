@@ -9,7 +9,6 @@ func Adx(inHigh, inLow, inClose []float64, inTimePeriod int) []float64 {
 	inTimePeriodF := float64(inTimePeriod)
 	lookbackTotal := (2 * inTimePeriod) - 1
 	startIdx := lookbackTotal
-	outIdx := inTimePeriod
 	prevMinusDM := 0.0
 	prevPlusDM := 0.0
 	prevTR := 0.0
@@ -83,7 +82,7 @@ func Adx(inHigh, inLow, inClose []float64, inTimePeriod int) []float64 {
 	prevADX := sumDX / inTimePeriodF
 
 	outReal[startIdx] = prevADX
-	outIdx = startIdx + 1
+	outIdx := startIdx + 1
 	today++
 	for today < len(inClose) {
 		tempReal := inHigh[today]
@@ -254,11 +253,10 @@ func MinusDM(inHigh, inLow []float64, inTimePeriod int) []float64 {
 	}
 	startIdx := lookbackTotal
 	outIdx := startIdx
-	today := startIdx
 	prevHigh := 0.0
 	prevLow := 0.0
 	if inTimePeriod <= 1 {
-		today = startIdx - 1
+		today := startIdx - 1
 		prevHigh = inHigh[today]
 		prevLow = inLow[today]
 		for today < len(inHigh)-1 {
@@ -279,7 +277,7 @@ func MinusDM(inHigh, inLow []float64, inTimePeriod int) []float64 {
 		return outReal
 	}
 	prevMinusDM := 0.0
-	today = startIdx - lookbackTotal
+	today := startIdx - lookbackTotal
 	prevHigh = inHigh[today]
 	prevLow = inLow[today]
 	i := inTimePeriod - 1
@@ -343,11 +341,10 @@ func PlusDM(inHigh, inLow []float64, inTimePeriod int) []float64 {
 	}
 	startIdx := lookbackTotal
 	outIdx := startIdx
-	today := startIdx
 	prevHigh := 0.0
 	prevLow := 0.0
 	if inTimePeriod <= 1 {
-		today = startIdx - 1
+		today := startIdx - 1
 		prevHigh = inHigh[today]
 		prevLow = inLow[today]
 		for today < len(inHigh)-1 {
@@ -368,7 +365,7 @@ func PlusDM(inHigh, inLow []float64, inTimePeriod int) []float64 {
 		return outReal
 	}
 	prevPlusDM := 0.0
-	today = startIdx - lookbackTotal
+	today := startIdx - lookbackTotal
 	prevHigh = inHigh[today]
 	prevLow = inLow[today]
 	i := inTimePeriod - 1

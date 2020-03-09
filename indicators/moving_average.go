@@ -88,9 +88,9 @@ func Ema(inReal []float64, inTimePeriod int) []float64 {
 }
 
 // Mama - MESA Adaptive Moving Average (lookback=32)
-func Mama(inReal []float64, inFastLimit, inSlowLimit float64) ([]float64, []float64) {
-	outMAMA := make([]float64, len(inReal))
-	outFAMA := make([]float64, len(inReal))
+func Mama(inReal []float64, inFastLimit, inSlowLimit float64) (outMAMA, outFAMA []float64) {
+	outMAMA = make([]float64, len(inReal))
+	outFAMA = make([]float64, len(inReal))
 
 	a := 0.0962
 	b := 0.5769
@@ -130,7 +130,6 @@ func Mama(inReal []float64, inFastLimit, inSlowLimit float64) ([]float64, []floa
 		periodWMASum += tempReal * 4.0
 		trailingWMAValue = inReal[trailingWMAIdx]
 		trailingWMAIdx++
-		smoothedValue = periodWMASum * 0.1
 		periodWMASum -= periodWMASub
 		i--
 		ok = i != 0
@@ -473,7 +472,7 @@ func Kama(inReal []float64, inTimePeriod int) []float64 {
 
 // Macd - Moving Average Convergence/Divergence
 // unstable period ~= 100
-func Macd(inReal []float64, inFastPeriod, inSlowPeriod, inSignalPeriod int) ([]float64, []float64, []float64) {
+func Macd(inReal []float64, inFastPeriod, inSlowPeriod, inSignalPeriod int) (outMACD, outMACDSignal, outMACDHist []float64) {
 	if inSlowPeriod < inFastPeriod {
 		inSlowPeriod, inFastPeriod = inFastPeriod, inSlowPeriod
 	}
@@ -503,13 +502,13 @@ func Macd(inReal []float64, inFastPeriod, inSlowPeriod, inSignalPeriod int) ([]f
 		fastEMABuffer[i] -= slowEMABuffer[i]
 	}
 
-	outMACD := make([]float64, len(inReal))
+	outMACD = make([]float64, len(inReal))
 	for i := lookbackTotal - 1; i < len(fastEMABuffer); i++ {
 		outMACD[i] = fastEMABuffer[i]
 	}
-	outMACDSignal := ema(outMACD, inSignalPeriod, 2.0/float64(inSignalPeriod+1))
+	outMACDSignal = ema(outMACD, inSignalPeriod, 2.0/float64(inSignalPeriod+1))
 
-	outMACDHist := make([]float64, len(inReal))
+	outMACDHist = make([]float64, len(inReal))
 	for i := lookbackTotal; i < len(outMACDHist); i++ {
 		outMACDHist[i] = outMACD[i] - outMACDSignal[i]
 	}
@@ -519,7 +518,7 @@ func Macd(inReal []float64, inFastPeriod, inSlowPeriod, inSignalPeriod int) ([]f
 
 // MacdExt - MACD with controllable MA type
 // unstable period ~= 100
-func MacdExt(inReal []float64, inFastPeriod int, inFastMAType MaType, inSlowPeriod int, inSlowMAType MaType, inSignalPeriod int, inSignalMAType MaType) ([]float64, []float64, []float64) {
+func MacdExt(inReal []float64, inFastPeriod int, inFastMAType MaType, inSlowPeriod int, inSlowMAType MaType, inSignalPeriod int, inSignalMAType MaType) (outMACD, outMACDSignal, outMACDHist []float64) {
 	lookbackLargest := 0
 	if inFastPeriod < inSlowPeriod {
 		lookbackLargest = inSlowPeriod
@@ -528,9 +527,9 @@ func MacdExt(inReal []float64, inFastPeriod int, inFastMAType MaType, inSlowPeri
 	}
 	lookbackTotal := (inSignalPeriod - 1) + (lookbackLargest - 1)
 
-	outMACD := make([]float64, len(inReal))
-	outMACDSignal := make([]float64, len(inReal))
-	outMACDHist := make([]float64, len(inReal))
+	outMACD = make([]float64, len(inReal))
+	outMACDSignal = make([]float64, len(inReal))
+	outMACDHist = make([]float64, len(inReal))
 
 	slowMABuffer := Ma(inReal, inSlowPeriod, inSlowMAType)
 	fastMABuffer := Ma(inReal, inFastPeriod, inFastMAType)
@@ -552,7 +551,7 @@ func MacdExt(inReal []float64, inFastPeriod int, inFastMAType MaType, inSlowPeri
 
 // MacdFix - MACD Fix 12/26
 // unstable period ~= 100
-func MacdFix(inReal []float64, inSignalPeriod int) ([]float64, []float64, []float64) {
+func MacdFix(inReal []float64, inSignalPeriod int) (outMACD, outMACDSignal, outMACDHist []float64) {
 	return Macd(inReal, 0, 0, inSignalPeriod)
 }
 
@@ -706,7 +705,6 @@ func Trima(inReal []float64, inTimePeriod int) []float64 {
 
 	lookbackTotal := inTimePeriod - 1
 	startIdx := lookbackTotal
-	outIdx := inTimePeriod - 1
 	var factor float64
 
 	if inTimePeriod%2 == 1 {
@@ -730,7 +728,7 @@ func Trima(inReal []float64, inTimePeriod int) []float64 {
 			numeratorAdd += tempReal
 			numerator += numeratorAdd
 		}
-		outIdx = inTimePeriod - 1
+		outIdx := inTimePeriod - 1
 		tempReal := inReal[trailingIdx]
 		trailingIdx++
 		outReal[outIdx] = numerator * factor
@@ -774,7 +772,7 @@ func Trima(inReal []float64, inTimePeriod int) []float64 {
 			numeratorAdd += tempReal
 			numerator += numeratorAdd
 		}
-		outIdx = inTimePeriod - 1
+		outIdx := inTimePeriod - 1
 		tempReal := inReal[trailingIdx]
 		trailingIdx++
 		outReal[outIdx] = numerator * factor

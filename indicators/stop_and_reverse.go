@@ -172,6 +172,7 @@ func SarExt(inHigh, inLow []float64,
 	newLow := inLow[todayIdx-1]
 	ep := 0.0
 	sar := 0.0
+	//nolint ifElseChain switch case makes execution flow harder to follow with negative numbers
 	if inStartValue == 0 {
 		if isLong == 1 {
 			ep = inHigh[todayIdx]
