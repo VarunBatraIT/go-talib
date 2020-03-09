@@ -71,4 +71,4 @@ issues:
   max-same-issues: 0
 
 service:
-  golangci-lint-version: 1.17.x
+  golangci-lint-version: 1.26.x
