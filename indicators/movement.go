@@ -245,94 +245,15 @@ func Dx(inHigh, inLow, inClose []float64, inTimePeriod int) []float64 {
 
 // MinusDM - Minus Directional Movement
 func MinusDM(inHigh, inLow []float64, inTimePeriod int) []float64 {
-	outReal := make([]float64, len(inHigh))
-
-	lookbackTotal := 1
-	if inTimePeriod > 1 {
-		lookbackTotal = inTimePeriod - 1
-	}
-	startIdx := lookbackTotal
-	outIdx := startIdx
-	prevHigh := 0.0
-	prevLow := 0.0
-	if inTimePeriod <= 1 {
-		today := startIdx - 1
-		prevHigh = inHigh[today]
-		prevLow = inLow[today]
-		for today < len(inHigh)-1 {
-			today++
-			tempReal := inHigh[today]
-			diffP := tempReal - prevHigh
-			prevHigh = tempReal
-			tempReal = inLow[today]
-			diffM := prevLow - tempReal
-			prevLow = tempReal
-			if (diffM > 0) && (diffP < diffM) {
-				outReal[outIdx] = diffM
-			} else {
-				outReal[outIdx] = 0
-			}
-			outIdx++
-		}
-		return outReal
-	}
-	prevMinusDM := 0.0
-	today := startIdx - lookbackTotal
-	prevHigh = inHigh[today]
-	prevLow = inLow[today]
-	i := inTimePeriod - 1
-	for i > 0 {
-		i--
-		today++
-		tempReal := inHigh[today]
-		diffP := tempReal - prevHigh
-		prevHigh = tempReal
-		tempReal = inLow[today]
-		diffM := prevLow - tempReal
-		prevLow = tempReal
-		if (diffM > 0) && (diffP < diffM) {
-			prevMinusDM += diffM
-		}
-	}
-	i = 0
-	for i != 0 {
-		i--
-		today++
-		tempReal := inHigh[today]
-		diffP := tempReal - prevHigh
-		prevHigh = tempReal
-		tempReal = inLow[today]
-		diffM := prevLow - tempReal
-		prevLow = tempReal
-		if (diffM > 0) && (diffP < diffM) {
-			prevMinusDM = prevMinusDM - (prevMinusDM / float64(inTimePeriod)) + diffM
-		} else {
-			prevMinusDM -= prevMinusDM / float64(inTimePeriod)
-		}
-	}
-	outReal[startIdx] = prevMinusDM
-	outIdx = startIdx + 1
-	for today < len(inHigh)-1 {
-		today++
-		tempReal := inHigh[today]
-		diffP := tempReal - prevHigh
-		prevHigh = tempReal
-		tempReal = inLow[today]
-		diffM := prevLow - tempReal
-		prevLow = tempReal
-		if (diffM > 0) && (diffP < diffM) {
-			prevMinusDM = prevMinusDM - (prevMinusDM / float64(inTimePeriod)) + diffM
-		} else {
-			prevMinusDM -= prevMinusDM / float64(inTimePeriod)
-		}
-		outReal[outIdx] = prevMinusDM
-		outIdx++
-	}
-	return outReal
+	return dm(inHigh, inLow, inTimePeriod, true)
 }
 
 // PlusDM - Plus Directional Movement
 func PlusDM(inHigh, inLow []float64, inTimePeriod int) []float64 {
+	return dm(inHigh, inLow, inTimePeriod, false)
+}
+
+func dm(inHigh, inLow []float64, inTimePeriod int, minus bool) []float64 {
 	outReal := make([]float64, len(inHigh))
 
 	lookbackTotal := 1
@@ -355,10 +276,18 @@ func PlusDM(inHigh, inLow []float64, inTimePeriod int) []float64 {
 			tempReal = inLow[today]
 			diffM := prevLow - tempReal
 			prevLow = tempReal
-			if (diffP > 0) && (diffP > diffM) {
-				outReal[outIdx] = diffP
+			if minus {
+				if (diffM > 0) && (diffP < diffM) {
+					outReal[outIdx] = diffM
+				} else {
+					outReal[outIdx] = 0
+				}
 			} else {
-				outReal[outIdx] = 0
+				if (diffP > 0) && (diffP > diffM) {
+					outReal[outIdx] = diffP
+				} else {
+					outReal[outIdx] = 0
+				}
 			}
 			outIdx++
 		}
@@ -378,8 +307,14 @@ func PlusDM(inHigh, inLow []float64, inTimePeriod int) []float64 {
 		tempReal = inLow[today]
 		diffM := prevLow - tempReal
 		prevLow = tempReal
-		if (diffP > 0) && (diffP > diffM) {
-			prevPlusDM += diffP
+		if minus {
+			if (diffM > 0) && (diffP < diffM) {
+				prevPlusDM += diffM
+			}
+		} else {
+			if (diffP > 0) && (diffP > diffM) {
+				prevPlusDM += diffP
+			}
 		}
 	}
 	i = 0
@@ -392,10 +327,18 @@ func PlusDM(inHigh, inLow []float64, inTimePeriod int) []float64 {
 		tempReal = inLow[today]
 		diffM := prevLow - tempReal
 		prevLow = tempReal
-		if (diffP > 0) && (diffP > diffM) {
-			prevPlusDM = prevPlusDM - (prevPlusDM / float64(inTimePeriod)) + diffP
+		if minus {
+			if (diffM > 0) && (diffP < diffM) {
+				prevPlusDM = prevPlusDM - (prevPlusDM / float64(inTimePeriod)) + diffM
+			} else {
+				prevPlusDM -= prevPlusDM / float64(inTimePeriod)
+			}
 		} else {
-			prevPlusDM -= prevPlusDM / float64(inTimePeriod)
+			if (diffP > 0) && (diffP > diffM) {
+				prevPlusDM = prevPlusDM - (prevPlusDM / float64(inTimePeriod)) + diffP
+			} else {
+				prevPlusDM -= prevPlusDM / float64(inTimePeriod)
+			}
 		}
 	}
 	outReal[startIdx] = prevPlusDM
@@ -408,10 +351,18 @@ func PlusDM(inHigh, inLow []float64, inTimePeriod int) []float64 {
 		tempReal = inLow[today]
 		diffM := prevLow - tempReal
 		prevLow = tempReal
-		if (diffP > 0) && (diffP > diffM) {
-			prevPlusDM = prevPlusDM - (prevPlusDM / float64(inTimePeriod)) + diffP
+		if minus {
+			if (diffM > 0) && (diffP < diffM) {
+				prevPlusDM = prevPlusDM - (prevPlusDM / float64(inTimePeriod)) + diffM
+			} else {
+				prevPlusDM -= prevPlusDM / float64(inTimePeriod)
+			}
 		} else {
-			prevPlusDM -= prevPlusDM / float64(inTimePeriod)
+			if (diffP > 0) && (diffP > diffM) {
+				prevPlusDM = prevPlusDM - (prevPlusDM / float64(inTimePeriod)) + diffP
+			} else {
+				prevPlusDM -= prevPlusDM / float64(inTimePeriod)
+			}
 		}
 		outReal[outIdx] = prevPlusDM
 		outIdx++

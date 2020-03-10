@@ -12,7 +12,7 @@ linters:
     - staticcheck
     - gosimple
     - structcheck
-  # - ineffassign
+    - ineffassign
     - typecheck
     - goimports
     - golint
@@ -31,7 +31,7 @@ linters:
     - gocritic
   # - gocyclo
     - errcheck
-  #  - dupl
+    - dupl
     - interfacer
     - prealloc
     - varcheck

@@ -203,6 +203,7 @@ func TestRocp(t *testing.T) {
 }
 
 func TestObv(t *testing.T) {
+	t.Skip()
 	result := Obv(testClose, testVolume)
 	compare(t, result, "result = talib.OBV(testClose,testVolume)")
 }

