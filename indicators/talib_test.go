@@ -36,7 +36,7 @@ var (
 
 	testNothingCrossed1 = []float64{1, 2, 3, 4, 8, 6, 7}
 	testNothingCrossed2 = []float64{1, 4, 5, 9, 5, 3, 7}
-	testCrossover1 = 	[]float64{1, 3, 2, 4, 8, 3, 8}
+	testCrossover1      = []float64{1, 3, 2, 4, 8, 3, 8}
 	testCrossover2      = []float64{1, 5, 1, 4, 5, 6, 7}
 )
 
