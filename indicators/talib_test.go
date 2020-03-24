@@ -36,7 +36,7 @@ var (
 
 	testNothingCrossed1 = []float64{1, 2, 3, 4, 8, 6, 7}
 	testNothingCrossed2 = []float64{1, 4, 5, 9, 5, 3, 7}
-	testCrossover1      = []float64{1, 3, 2, 4, 8, 6, 7}
+	testCrossover1 = 	[]float64{1, 3, 2, 4, 8, 3, 8}
 	testCrossover2      = []float64{1, 5, 1, 4, 5, 6, 7}
 )
 
@@ -668,6 +668,7 @@ func TestAdOsc(t *testing.T) {
 }
 
 func TestGenerateExpectedCandlesOutput(t *testing.T) {
+	t.Skip()
 	resultHigh, resultOpen, resultClose, resultLow := HeikinashiCandles(testHigh, testOpen, testClose, testLow)
 
 	var outResultHigh string
@@ -747,8 +748,6 @@ func TestCrossover(t *testing.T) {
 		t.Error("Crossover: Not expected and found")
 	}
 
-	t.Log(Crossover(testCrossover1, testCrossover2))
-
 	if Crossover(testCrossover1, testCrossover2) == false {
 		t.Error("Crossover: Expected and not found")
 	}
@@ -764,7 +763,7 @@ func TestCrossunder(t *testing.T) {
 	}
 
 	// Nothing
-	series1 = []float64{1, 2, 3, 4, 8, 6, 7}
+	series1 = []float64{1, 3, 2, 4, 8, 3, 8}
 	series2 = []float64{1, 4, 5, 9, 5, 3, 7}
 
 	if Crossunder(series1, series2) == true {
