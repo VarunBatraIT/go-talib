@@ -591,25 +591,32 @@ func StdDev(inReal []float64, inTimePeriod int, inNbDev float64) []float64 {
 	return outReal
 }
 
-// Obv - On Balance Volume
-func Obv(inReal, inVolume []float64) []float64 {
-	outReal := make([]float64, len(inReal))
-	startIdx := 0
-	prevOBV := inVolume[startIdx]
-	prevReal := inReal[startIdx]
-	outIdx := 0
-	for i := startIdx; i < len(inReal); i++ {
-		tempReal := inReal[i]
-		if tempReal > prevReal {
-			prevOBV += inVolume[i]
-		} else if tempReal < prevReal {
-			prevOBV -= inVolume[i]
+// OBV implements the on balance volume indicator
+func OBV(ohlc [][]float64, selector int, cryptowatch bool) []float64 {
+	var result []float64
+
+	for x := range ohlc {
+		if x == 0 {
+			if cryptowatch {
+				result = append(result, 0)
+			} else {
+				result = append(result, ohlc[x][5])
+			}
+			continue
 		}
-		outReal[outIdx] = prevOBV
-		prevReal = tempReal
-		outIdx++
+		switch ohlc[x][selector] {
+
+		}
+		// nolint gocritic ifElseChain: switch statement complexity not eeded
+		if ohlc[x][selector] > ohlc[x-1][selector] {
+			result = append(result, result[x-1]+ohlc[x][selector])
+		} else if ohlc[x][selector] < ohlc[x-1][selector] {
+			result = append(result, result[x-1]-ohlc[x][5])
+		} else if ohlc[x][selector] == ohlc[x-1][selector] {
+			result = append(result, result[x-1])
+		}
 	}
-	return outReal
+	return result
 }
 
 // Beta - Beta

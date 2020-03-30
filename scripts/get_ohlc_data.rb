@@ -16,7 +16,7 @@ v = Oj.load(json)
 gct_ta = false
 
 v['result']['86400'].each_with_index do |r, i|    
-    next unless i > (v['result']['86400'].length() - 101)
+    next unless i > (v['result']['86400'].length() - 22)
     if gct_ta 
         puts "[#{r[0]}, #{r[1]}, #{r[2]}, #{r[3]}, #{r[4]}, #{r[5].round(2)}],"
     else
