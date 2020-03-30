@@ -208,7 +208,6 @@ func TestOBV(t *testing.T) {
 
 	for x := range testTimestamp {
 		ohlcv[x] = make([]float64, 6)
-
 		ohlcv[x][0] = testTimestamp[x]
 		ohlcv[x][1] = testOpen[x]
 		ohlcv[x][2] = testHigh[x]
@@ -217,7 +216,7 @@ func TestOBV(t *testing.T) {
 		ohlcv[x][5] = testVolume[x]
 	}
 
-	r := OBV(ohlcv, 4, false)
+	r := OBV(ohlcv, false)
 	if r[0] != 3796.23 {
 		t.Fatalf("unexpected result received %v: ", r[0])
 	}

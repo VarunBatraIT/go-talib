@@ -592,7 +592,7 @@ func StdDev(inReal []float64, inTimePeriod int, inNbDev float64) []float64 {
 }
 
 // OBV implements the on balance volume indicator
-func OBV(ohlc [][]float64, selector int, cryptowatch bool) []float64 {
+func OBV(ohlc [][]float64, cryptowatch bool) []float64 {
 	var result []float64
 
 	for x := range ohlc {
@@ -604,15 +604,12 @@ func OBV(ohlc [][]float64, selector int, cryptowatch bool) []float64 {
 			}
 			continue
 		}
-		switch ohlc[x][selector] {
-
-		}
 		// nolint gocritic ifElseChain: switch statement complexity not eeded
-		if ohlc[x][selector] > ohlc[x-1][selector] {
-			result = append(result, result[x-1]+ohlc[x][selector])
-		} else if ohlc[x][selector] < ohlc[x-1][selector] {
+		if ohlc[x][4] > ohlc[x-1][4] {
+			result = append(result, result[x-1]+ohlc[x][5])
+		} else if ohlc[x][4] < ohlc[x-1][4] {
 			result = append(result, result[x-1]-ohlc[x][5])
-		} else if ohlc[x][selector] == ohlc[x-1][selector] {
+		} else if ohlc[x][4] == ohlc[x-1][4] {
 			result = append(result, result[x-1])
 		}
 	}
