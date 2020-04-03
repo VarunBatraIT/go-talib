@@ -28,6 +28,7 @@ and use `talib` as the package name inside the code.
 
 ### Prerequisite
 
+##### **Requires a working [WSL](https://en.wikipedia.org/wiki/Windows_Subsystem_for_Linux) to test on Windows due to python and ta-lib requirements** install
 
 1) Build and install [talib](https://downloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz) 
 
