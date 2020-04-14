@@ -502,13 +502,16 @@ func Macd(inReal []float64, inFastPeriod, inSlowPeriod, inSignalPeriod int) (out
 		fastEMABuffer[i] -= slowEMABuffer[i]
 	}
 
-	outMACD = make([]float64, len(inReal))
-	for i := lookbackTotal - 1; i < len(fastEMABuffer); i++ {
-		outMACD[i] = fastEMABuffer[i]
+	outMACD = fastEMABuffer
+	for i := 0; i < lookbackTotal-1; i++ {
+		outMACD[i] = 0
 	}
 	outMACDSignal = ema(outMACD, inSignalPeriod, 2.0/float64(inSignalPeriod+1))
+	outMACDHist = slowEMABuffer
+	for i := 0; i < lookbackTotal; i++ {
+		outMACDHist[i] = 0
+	}
 
-	outMACDHist = make([]float64, len(inReal))
 	for i := lookbackTotal; i < len(outMACDHist); i++ {
 		outMACDHist[i] = outMACD[i] - outMACDSignal[i]
 	}
